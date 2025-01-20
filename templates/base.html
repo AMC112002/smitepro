@@ -1,0 +1,104 @@
+{% load static %}
+{% include 'includes/header.html' %}
+<body>
+    {% include 'includes/navbar.html' %}
+<style>
+    body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        background-image: url("{% static 'fondo/fondo.jpg' %}"); /* Ruta a la imagen en los archivos estáticos */
+        background-size: cover; /* Asegura que la imagen cubra toda la pantalla */
+        background-position: center center; /* Centra la imagen */
+        color: #333333; /* Texto oscuro para legibilidad */
+    }
+
+    footer {
+        background-color: #000000;
+        color: #fff;
+        text-align: center;
+        min-height: 7vh;
+        padding: 20px 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        margin-top: 8%;
+    }
+
+    .container-fluid {
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+        border-radius: 8px;
+        background-color: rgba(255, 255, 255, 0.8); /* Fondo blanco con algo de transparencia */
+    }
+
+    .version-info {
+        position: absolute;
+        right: 20px; /* Espaciado desde el borde derecho */
+    }
+
+    .azul-claro-smitepro {
+        background-color: #99ddec;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .azul-claro-smitepro:hover {
+        background-color: #7bc9e1;
+        transform: scale(1.05);
+    }
+
+
+    .azul-claro-smitepro.active {
+        background-color:#7fbbd9; 
+        color: white; 
+        outline: 2px solidrgb(87, 87, 87);
+        transform: scale(1.);
+    }
+
+    .azul-oscuro-smitepro {
+        background-color: #7fbbd9;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+
+    .azul-oscuro-smitepro:hover {
+        background-color: #7bc9e1;
+        transform: scale(1.05);
+    }
+
+    .gris-smitepro {
+        color: white;
+        background-color: #828787;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .gris-smitepro-nav {
+        color: white;
+        background-color: #828787;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .gris-smitepro:hover {
+        color: white;
+        background-color: #6f7575;
+        transform: scale(1.05);
+    }
+        
+</style>
+    <!-- Contenedor Principal -->
+    <div class="container-fluid mt-3 w-75">
+        {% block content %}
+        {% endblock %}
+    </div>
+    <!-- Incluir jQuery y Bootstrap JS desde CDN -->
+    <!-- jQuery (versión completa) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- JS de Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- <script src="{% static 'js/loader.js' %}"></script> -->
+     {% block extra_js %}{% endblock %}
+
+     {% include 'includes/footer.html' %}
+</body>
+</html>
