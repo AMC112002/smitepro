@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ god.name }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center text-light display-4">{{ god.name }}</h1>
+
+    {% if god.image %}
+        <div class="text-center">
+            <img src="{{ god.image.url }}" alt="{{ god.name }}" class="img-fluid rounded my-4" style="max-width: 300px;">
+        </div>
+    {% endif %}
+
+    <div class="row text-light">
+        <div class="col-md-6">
+            <h3>Información Básica</h3>
+            <p><strong>Panteón:</strong> {{ god.get_pantheon_display }}</p>
+            <p><strong>Rol:</strong> {{ god.get_role_display }}</p>
+            <p><strong>Dificultad:</strong> {{ god.get_difficulty_display }}</p>
+            <p><strong>Tipo de Poder:</strong> {{ god.get_power_display }}</p>
+        </div>
+        <div class="col-md-6">
+            <h3>Estadísticas</h3>
+            <p><strong>Salud:</strong> {{ god.health }}</p>
+            <p><strong>Maná:</strong> {{ god.mana }}</p>
+            <p><strong>Velocidad:</strong> {{ god.speed }}</p>
+            <p><strong>Daño:</strong> {{ god.damage }}</p>
+            <p><strong>Velocidad de Ataque:</strong> {{ god.attack_speed }}</p>
+        </div>
+    </div>
+
+    <div class="my-4">
+        <h3 class="text-light">Habilidades</h3>
+        {% for ability in abilities %}
+            <div class="card mb-3 bg-dark text-light">
+                <div class="card-body">
+                    <h5 class="card-title">{{ ability.name }}</h5>
+                    <p><strong>Tipo:</strong> {{ ability.get_ability_type_display }}</p>
+                    <p><strong>Alcance:</strong> {{ ability.range }}</p>
+                    <p><strong>Radio:</strong> {{ ability.radius }}</p>
+                    <p>{{ ability.description }}</p>
+                    {% if ability.image %}
+                        <img src="{{ ability.image.url }}" alt="{{ ability.name }}" class="img-fluid rounded mt-2">
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if god.lore %}
+        <div class="my-4">
+            <h3 class="text-light">Historia</h3>
+            <p>{{ god.lore }}</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

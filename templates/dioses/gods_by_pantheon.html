@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% load static custom_filters %}
+
+{% block title %}Dioses{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4 text-light display-4 title-effect">Dioses</h1>
+
+    <style>
+
+        /* Título principal con efecto */
+        .title-effect {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.5);
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            animation: glow 3s infinite;
+        }
+
+        /* Efecto de animación de brillo */
+        @keyframes glow {
+            0% {
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.5);
+            }
+            50% {
+                text-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 0.8);
+            }
+            100% {
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.5);
+            }
+        }
+
+        /* Ajuste del contenedor */
+        .container {
+            text-align: center;
+        }
+
+        /* Estilo general para el fondo y espaciado */
+        body {
+            background-color: #212529;
+            color: #f8f9fa;
+        }
+
+        /* Mejorando la tarjeta */
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #343a40;
+            height: 100%;
+            color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Efecto al pasar el ratón sobre la tarjeta */
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .card img {
+            height: 180px;
+            object-fit: cover;
+            object-position: top;
+        }
+
+        /* Cuerpo de la tarjeta */
+        .card-body {
+            padding: 1rem;
+            text-align: center;
+        }
+
+        /* Títulos de las tarjetas */
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        /* Estilos de la fila de dioses */
+        .row {
+            margin-top: 30px;
+        }
+
+        /* Estilo para el mensaje de "No hay dioses" */
+        .no-gods-message {
+            color: #f8f9fa;
+            font-size: 1.1rem;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        /* Estilo de los encabezados de panteón */
+        .pantheon-header {
+            font-size: 2rem;
+            color: #800193;
+            border-bottom: 2px solid #800193;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .pantheon-header img {
+            height: 40px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .pantheon-header.arturico { color: red; border-color: red; }
+        .pantheon-header.babilonio { color: #00cfff; border-color: #00cfff; }
+        .pantheon-header.celta { color: green; border-color: green; }
+        .pantheon-header.chino { color: yellow; border-color: yellow; }
+        .pantheon-header.egipcio { color: rgb(134, 90, 3); border-color: rgb(134, 90, 3); }
+        .pantheon-header.eslavo { color: darkgoldenrod; border-color: darkgoldenrod; }
+        .pantheon-header.grandes_antiguos { color: purple; border-color: purple; }
+        .pantheon-header.griego { color: purple; border-color: purple; }
+        .pantheon-header.hindu { color: pink; border-color: pink; }
+        .pantheon-header.japones { color: red; border-color: red; }
+        .pantheon-header.maya { color: yellow; border-color: yellow; }
+        .pantheon-header.nordico { color: white; border-color: white; }
+        .pantheon-header.polinesio { color: rgb(255, 115, 0); border-color: rgb(255, 115, 0); }
+        .pantheon-header.romano { color: yellow; border-color: yellow; }
+        .pantheon-header.vudu { color: purple; border-color: purple; }
+        .pantheon-header.yoruba { color: yellow; border-color: yellow; }
+
+    </style>
+
+    {% for pantheon, gods in gods_by_pantheon.items %}
+    <div class="mb-5">
+        <h2 class="pantheon-header {{ pantheon|slugify }}">
+            {% with pantheon_images|dict_key:pantheon as pantheon_image %}
+                <img src="{{ pantheon_image }}" alt="{{ pantheon }} logo">
+            {% endwith %}
+            {{ pantheon }}
+        </h2>
+        <div class="row g-4">
+            {% for god in gods %}
+                <div class="col-md-3 col-sm-6">
+                    <a href="{% url 'god_detail' god.id %}" class="text-decoration-none">
+                        <div class="card">
+                            {% if god.image %}
+                                <img src="{{ god.image.url }}" class="card-img-top" alt="{{ god.name }}">
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">{{ god.name }}</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% empty %}
+                <div class="no-gods-message">
+                    <p>No hay dioses en este panteón.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+{% endblock %}

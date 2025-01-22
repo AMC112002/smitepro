@@ -16,10 +16,7 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'dioses_list' %}active{% endif %}" href="">Dioses</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'habilidades_list' %}active{% endif %}" href="">Habilidades</a>
+                    <a class="nav-link {% if request.resolver_match.url_name == 'gods_by_pantheon' %}active{% endif %}" href="{% url 'gods_by_pantheon' %}">Dioses</a>
                 </li>
                 {% if user.is_authenticated %}
                 <li class="nav-item">
