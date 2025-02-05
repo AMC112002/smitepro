@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Modos de Juego{% endblock %}
+
+{% block content %}
+<style>
+    .game-mode-container {
+        background-color: #111; /* Fondo oscuro */
+        padding: 20px;
+        margin-bottom: 30px;
+        border-radius: 10px;
+        border: 1px solid #444;
+    }
+
+    .game-mode-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #fff;
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+
+    .game-mode-title img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .game-mode-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+    .game-mode-description {
+        flex: 1;
+        color: #bbb;
+        font-size: 1.1rem;
+    }
+
+    .game-mode-description a {
+        color: #1e90ff;
+        text-decoration: none;
+    }
+
+    .game-mode-description a:hover {
+        text-decoration: underline;
+    }
+
+    .game-mode-image {
+        max-width: 400px;
+        border-radius: 10px;
+    }
+
+    .ver-mas-btn {
+        transition: all 0.3s ease-in-out;
+        border: 2px solid #1e90ff;
+        color: #1e90ff;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .ver-mas-btn:hover {
+        background-color: #1e90ff;
+        color: white;
+        transform: scale(1.05);
+    }
+
+</style>
+
+<div class="container my-5">
+    <h1 class="text-center mb-4 text-light display-4 title-effect">Modos de Juego</h1>
+
+    {% for mode in modes %}
+    <div class="game-mode-container">
+        <div class="game-mode-title">
+            <img src="{% static 'gamemodes/' %}{{ mode.name|lower }}.webp" alt="{{ mode.name }} icon">
+            <span>{{ mode.name }}</span>
+        </div>
+        <div class="game-mode-content">
+            <div class="game-mode-description">
+                <p>{{ mode.resume|linebreaksbr }}</p>
+                <p><strong>Jugadores:</strong> {{ mode.statistics.jugadores_equipo }}</p>
+                <a href="{% url 'game_mode_detail' mode.id %}" class="btn btn-outline-light px-4 py-2 rounded-pill shadow-sm ver-mas-btn">
+                    Ver más
+                </a>                
+            </div>
+            {% if mode.image %}
+            <img src="{{ mode.image.url }}" alt="{{ mode.name }}" class="game-mode-image">
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+{% endblock %}

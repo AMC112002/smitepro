@@ -33,6 +33,8 @@
             border-radius: 12px;
             background-color: rgba(18, 18, 18, 0.9); /* Fondo oscuro con transparencia */
             padding: 20px;
+            margin-bottom: 1rem;
+
         }
 
         .azul-claro-smitepro {
@@ -79,12 +81,14 @@
 
     <!-- Contenedor Principal -->
     <div class="container-fluid mt-3 w-75">
+        {% include 'includes/messages.html' %}
         {% block content %}
         {% endblock %}
     </div>
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     {% block extra_js %}{% endblock %}
     {% include 'includes/footer.html' %}

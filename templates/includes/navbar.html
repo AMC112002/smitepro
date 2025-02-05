@@ -18,9 +18,15 @@
                 <li class="nav-item">
                     <a class="nav-link {% if request.resolver_match.url_name == 'gods_by_pantheon' %}active{% endif %}" href="{% url 'gods_by_pantheon' %}">Dioses</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'item_list' %}active{% endif %}" href="{% url 'item_list' %}">Objetos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'game_modes_list' %}active{% endif %}" href="{% url 'game_modes_list' %}">Modos de Juego</a>
+                </li>
                 {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'perfil' %}active{% endif %}" href="">Perfil</a>
+                    <a class="nav-link {% if request.resolver_match.url_name == 'perfil' %}active{% endif %}" href="{% url 'perfil' %}">Perfil</a>
                 </li>
                 {% endif %}
             </ul>
@@ -29,11 +35,11 @@
             <ul class="navbar-nav ms-auto">
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href=""><i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión</a>
+                        <a class="nav-link" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión</a>
                     </li>
                 {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href=""><i class="fas fa-sign-in-alt me-2"></i>Iniciar sesión</a>
+                        <a class="nav-link" href="{% url 'login' %} "><i class="fas fa-sign-in-alt me-2"></i>Iniciar sesión</a>
                     </li>
                 {% endif %}
             </ul>

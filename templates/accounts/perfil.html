@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            {% include 'includes/messages.html' %}
+            <div class="card shadow-lg border-0 rounded-lg">
+                <!-- Header del Card -->
+                <div class="card-header azul-oscuro-imp text-white text-center py-4">
+                    <h3 class="mb-0">{{ user.first_name }} {{ user.last_name }}</h3>
+                </div>
+                
+                <!-- Cuerpo del Card -->
+                <div class="card-body p-4">
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-envelope me-2"></i>Email:</span>
+                            <span class="text-muted">{{ user.email }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-user me-2"></i>Nombre:</span>
+                            <span class="text-muted">{{ user.first_name }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-user me-2"></i>Apellido:</span>
+                            <span class="text-muted">{{ user.last_name }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-calendar-alt me-2"></i>Fecha de alta:</span>
+                            <span class="text-muted">{{ user.date_joined|date:"F d, Y" }}</span>
+                        </li>
+                    </ul>
+                    
+                    <!-- Botón de Cerrar Sesión -->
+                    <div class="d-flex justify-content-center">
+                        <form method="post" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

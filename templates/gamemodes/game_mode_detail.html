@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+<style>
+    .mode-container {
+        background-color: rgba(13, 17, 23, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 2rem;
+        border-radius: 20px;
+    }
+
+    .hero-image {
+        position: relative;
+        overflow: hidden;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        transition: transform 0.3s ease;
+    }
+
+    .hero-image:hover {
+        transform: scale(1.02);
+    }
+
+    .hero-image img {
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+    }
+
+    .stat-card {
+        background: linear-gradient(145deg, rgba(32, 36, 45, 0.9), rgba(22, 26, 35, 0.9));
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .stat-item {
+        padding: 0.8rem;
+        margin-bottom: 0.5rem;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .stat-label {
+        color: #a8b3cf;
+        font-weight: 500;
+    }
+
+    .stat-value {
+        color: #e2e8f5;
+        font-weight: 600;
+    }
+
+    .section-title {
+        color: #fff;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        position: relative;
+        padding-left: 1rem;
+        border-left: 4px solid #4a9eff;
+    }
+
+    .description-box {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 2rem;
+        border-radius: 15px;
+        margin: 2rem 0;
+        line-height: 1.8;
+        color: #e2e8f5;
+    }
+
+    .back-button {
+        background: linear-gradient(45deg, #4a9eff, #6f42c1);
+        color: white;
+        padding: 1rem 2.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(74, 158, 255, 0.3);
+    }
+
+    .back-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(74, 158, 255, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .minimap-image {
+        width: 100%;
+        max-width: 600px;
+        border-radius: 15px;
+        margin: 1rem auto;  /* Centra la imagen */
+        display: block; /* Asegura que la imagen sea un bloque para centrarse */
+    }
+
+    .jungle-image {
+        width: 100%;
+        max-width: 600px;
+        border-radius: 15px;
+        margin: 1rem 0;
+    }
+
+    .mechanics-list {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .mechanics-list li {
+        position: relative;
+        padding-left: 1.5em;
+        margin-bottom: 0.5em;
+        color: #e2e8f5;
+    }
+
+    .mechanics-list li:not(.empty):not(.indented)::before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        color: #4a9eff;
+    }
+
+    .mechanics-list li.indented {
+        padding-left: 3em;
+    }
+
+    .mechanics-list li.indented::before {
+        content: "→";
+        position: absolute;
+        left: 1.5em;
+        color: #4a9eff;
+    }
+
+    .mechanics-list li.empty {
+        height: 1em;
+    }
+</style>
+
+<div class="container my-5">
+    <div class="mode-container">
+        <!-- Título con efecto -->
+        <h1 class="text-center text-light display-4 mb-5" style="text-shadow: 0 2px 10px rgba(255,255,255,0.2)">
+            {{ mode.name }}
+        </h1>
+
+        <!-- Imagen Principal -->
+        {% if mode.image %}
+        <div class="hero-image mb-5">
+            <img src="{{ mode.image.url }}" alt="{{ mode.name }}">
+        </div>
+        {% endif %}
+
+        <!-- Descripción -->
+        <div class="description-box">
+            {{ mode.description|linebreaksbr }}
+        </div>
+
+        <div class="row">
+            <!-- Estadísticas -->
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <h3 class="section-title">Estadísticas Básicas</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">Jugadores por equipo</span>
+                        <span class="stat-value">{{ mode.statistics.jugadores_equipo }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Nivel Inicial</span>
+                        <span class="stat-value">{{ mode.statistics.nivel_inicial }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Oro Inicial</span>
+                        <span class="stat-value">{{ mode.statistics.oro_inicial }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Tiempo de Preparación</span>
+                        <span class="stat-value">{{ mode.statistics.tiempo_preparacion }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mecánicas -->
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <h3 class="section-title">Progresión y Apariciones</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">Tiempo de Minions</span>
+                        <span class="stat-value">{{ mode.statistics.tiempo_minions }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Tiempo de Jungla</span>
+                        <span class="stat-value">{{ mode.statistics.tiempo_jungla }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Generación de Oro</span>
+                        <span class="stat-value">{{ mode.statistics.generacion_oro }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Minimapa -->
+        {% if mode.minimap %}
+        <div class="section-title">Minimapa</div>
+        <img src="{{ mode.minimap.url }}" class="minimap-image" alt="Minimapa de {{ mode.name }}">
+        {% endif %}
+
+        <!-- Campos de la Jungla -->
+        <div class="stat-card">
+            <h3 class="section-title">Campos de la Jungla</h3>
+            <ul class="mechanics-list">
+                {% for camp in mode.jungle_camps.all %}
+                    <li>
+                        <img src="{% static 'jungla/' %}{{ camp.name|slugify }}.webp" alt="{{ camp.name }}" class="jungle-icon">
+                        <strong>{{ camp.name }}:</strong> {{ camp.description }}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Mecánicas Únicas -->
+        <div class="stat-card">
+            <h3 class="section-title">Mecánicas Únicas</h3>
+            <ul class="mechanics-list">
+                {% for mechanic in mechanics %}
+                    {% if mechanic.empty %}
+                        <li class="empty"></li>
+                    {% else %}
+                        <li class="{% if mechanic.indent %}indented{% endif %}">
+                            {{ mechanic.text }}
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Botón para volver -->
+        <div class="text-center mt-5">
+            <a href="{% url 'game_modes_list' %}" class="back-button">
+                Volver a Modos de Juego
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

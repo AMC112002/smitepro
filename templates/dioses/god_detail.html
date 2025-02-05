@@ -12,6 +12,13 @@
         </div>
     {% endif %}
 
+    {% if god.lore %}
+        <div class="my-4">
+            <h3 class="text-light">Historia</h3>
+            <p>{{ god.lore }}</p>
+        </div>
+    {% endif %}
+
     <div class="row text-light">
         <div class="col-md-6">
             <h3>Información Básica</h3>
@@ -47,12 +54,5 @@
             </div>
         {% endfor %}
     </div>
-
-    {% if god.lore %}
-        <div class="my-4">
-            <h3 class="text-light">Historia</h3>
-            <p>{{ god.lore }}</p>
-        </div>
-    {% endif %}
 </div>
 {% endblock %}
