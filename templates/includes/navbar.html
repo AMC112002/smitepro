@@ -15,18 +15,38 @@
         <!-- Enlaces del navbar -->
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'gods_by_pantheon' %}active{% endif %}" href="{% url 'gods_by_pantheon' %}">Dioses</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'item_list' %}active{% endif %}" href="{% url 'item_list' %}">Objetos</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'game_modes_list' %}active{% endif %}" href="{% url 'game_modes_list' %}">Modos de Juego</a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Información
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDropdown">
+                        <li>
+                            <a class="dropdown-item {% if request.resolver_match.url_name == 'gods_by_pantheon' %}active{% endif %}" href="{% url 'gods_by_pantheon' %}">
+                                <i class="fas fa-users me-2"></i>Dioses
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if request.resolver_match.url_name == 'item_list' %}active{% endif %}" href="{% url 'item_list' %}">
+                                <i class="fas fa-shield-alt me-2"></i>Objetos
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if request.resolver_match.url_name == 'game_modes_list' %}active{% endif %}" href="{% url 'game_modes_list' %}">
+                                <i class="fas fa-gamepad me-2"></i>Modos de Juego
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {% if request.resolver_match.url_name == 'news_list' %}active{% endif %}" href="{% url 'news_list' %}">
+                                <i class="fas fa-newspaper me-2"></i>Novedades
+                            </a>
+                        </li>
+                    </ul>
                 </li>
                 {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'perfil' %}active{% endif %}" href="{% url 'perfil' %}">Perfil</a>
+                    <a class="nav-link {% if request.resolver_match.url_name == 'perfil' %}active{% endif %}" href="{% url 'perfil' %}">
+                        <i class="fas fa-user me-2"></i>Perfil
+                    </a>
                 </li>
                 {% endif %}
             </ul>
@@ -39,10 +59,42 @@
                     </li>
                 {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %} "><i class="fas fa-sign-in-alt me-2"></i>Iniciar sesión</a>
+                        <a class="nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt me-2"></i>Iniciar sesión</a>
                     </li>
                 {% endif %}
             </ul>
         </div>
     </div>
 </nav>
+
+<style>
+    .dropdown-menu {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background-color: rgba(33, 37, 41, 0.95);
+        backdrop-filter: blur(10px);
+    }
+
+    .dropdown-item {
+        color: rgba(255, 255, 255, 0.85);
+        transition: all 0.3s ease;
+    }
+
+    .dropdown-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        transform: translateX(5px);
+    }
+
+    .dropdown-item.active {
+        background-color: rgba(74, 158, 255, 0.2);
+        color: white;
+    }
+
+    .nav-link {
+        transition: all 0.3s ease;
+    }
+
+    .nav-link:hover {
+        color: #4a9eff !important;
+    }
+</style>

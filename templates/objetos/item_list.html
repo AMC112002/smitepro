@@ -4,14 +4,29 @@
 
 {% block content %}
 <style>
-    /* Mantener estilos existentes y agregar/modificar: */
+    .banner {
+        background: linear-gradient(to bottom, #1e3a8a, #2563eb);
+        border: 4px solid #8b7500;
+        color: #fbbf24;
+        font-size: 2.5rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        text-align: center;
+        padding: 15px;
+        margin: 20px auto;
+        width: fit-content;
+        font-family: 'Cinzel', serif;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+        border-radius: 10px;
+    }
+
     h2.text-warning {
-        font-size: 2rem;  /* Título de consumibles más grande */
+        font-size: 2rem;
         margin-bottom: 1.5rem;
     }
 
     .card {
-        height: fit-content;  /* Ajusta el container al contenido */
+        height: fit-content;
         position: relative;
         overflow: hidden;
     }
@@ -20,7 +35,7 @@
         max-height: 80px;
         width: 100%;
         object-fit: contain;
-        margin-top: 0.75rem;  /* Espacio superior de la imagen */
+        margin-top: 0.75rem;
     }
 
     .card-body {
@@ -28,7 +43,6 @@
         text-align: center;
     }
 
-    /* Estilo para hacer que la tarjeta sea un enlace */
     .card-link {
         color: inherit;
         text-decoration: none;
@@ -36,21 +50,6 @@
 
     .card-link:hover {
         text-decoration: none;
-    }
-    .banner {
-        background: linear-gradient(to bottom, #1e3a8a, #2563eb); /* Fondo azul con gradiente */
-        border: 4px solid #8b7500; /* Borde marrón */
-        color: #fbbf24; /* Texto amarillo */
-        font-size: 2.5rem; /* Tamaño grande de la fuente */
-        font-weight: bold; /* Fuente en negrita */
-        text-transform: uppercase; /* Texto en mayúsculas */
-        text-align: center; /* Centrado del texto */
-        padding: 15px; /* Espaciado interno */
-        margin: 20px auto; /* Márgenes automáticos para centrar el banner */
-        width: fit-content; /* Ajustar al contenido */
-        font-family: 'Cinzel', serif; /* Fuente inspirada en la antigua Roma */
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5); /* Sombra para dar profundidad */
-        border-radius: 10px; /* Bordes redondeados */
     }
 </style>
 
@@ -63,7 +62,6 @@
     <div class="row">
         {% for item in consumables %}
         <div class="col-6 col-sm-4 col-md-2 col-lg-2 custom-col-consumables">
-            <!-- Enlace envuelve toda la tarjeta -->
             <a href="{% url 'item_detail' item.id %}" class="card-link">
                 <div class="card text-white bg-dark mb-2">
                     {% if item.image %}
@@ -80,15 +78,58 @@
     </div>
     {% endif %}
 
-    <!-- Sección de Otros Objetos -->
-    {% if other_items %}
-    <h2 class="text-primary mt-4">Otros Objetos</h2>
+    <!-- Sección de Reliquias -->
+    {% if relics %}
+    <h2 class="text-warning mt-4">Reliquias</h2>
     <div class="row">
-        {% for item in other_items %}
-        <div class="col-6 col-sm-4 col-md-2 col-lg-1 custom-col">
-            <!-- Enlace envuelve toda la tarjeta -->
+        {% for item in relics %}
+        <div class="col-6 col-sm-4 col-md-2 col-lg-2 custom-col-consumables">
             <a href="{% url 'item_detail' item.id %}" class="card-link">
-                <div class="card text-white bg-secondary mb-2">
+                <div class="card text-white bg-dark mb-2">
+                    {% if item.image %}
+                    <img src="{{ item.image.url }}" class="card-img-top img-fluid" alt="{{ item.name }}">
+                    {% endif %}
+                    <div class="card-body p-2">
+                        <h6 class="card-title">{{ item.name }}</h6>
+                        <p class="text-warning"><strong>Precio:</strong> {{ item.price }} oro</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Sección de Iniciales -->
+    {% if initials %}
+    <h2 class="text-warning mt-4">Iniciales</h2>
+    <div class="row">
+        {% for item in initials %}
+        <div class="col-6 col-sm-4 col-md-2 col-lg-2 custom-col-consumables">
+            <a href="{% url 'item_detail' item.id %}" class="card-link">
+                <div class="card text-white bg-dark mb-2">
+                    {% if item.image %}
+                    <img src="{{ item.image.url }}" class="card-img-top img-fluid" alt="{{ item.name }}">
+                    {% endif %}
+                    <div class="card-body p-2">
+                        <h6 class="card-title">{{ item.name }}</h6>
+                        <p class="text-warning"><strong>Precio:</strong> {{ item.price }} oro</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Sección de Pasivos -->
+    {% if passives %}
+    <h2 class="text-warning mt-4">Objetos Pasivos</h2>
+    <div class="row">
+        {% for item in passives %}
+        <div class="col-6 col-sm-4 col-md-2 col-lg-2 custom-col-consumables">
+            <a href="{% url 'item_detail' item.id %}" class="card-link">
+                <div class="card text-white bg-dark mb-2">
                     {% if item.image %}
                     <img src="{{ item.image.url }}" class="card-img-top img-fluid" alt="{{ item.name }}">
                     {% endif %}

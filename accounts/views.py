@@ -9,16 +9,24 @@ from django.core.mail import send_mail
 
 def register(request):
     if request.method == 'POST':
+        username = request.POST.get('username')  # Ahora se ingresa un username
         email = request.POST.get('email')
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
         telephone = request.POST.get('telephone')
         address = request.POST.get('address')
         password = request.POST.get('password')
-        
+        confirm_password = request.POST.get('confirm_password')
+        avatar = request.FILES.get('avatar')  # Recibe el archivo de imagen si se sube
+
+        # Verificar que las contraseñas coincidan
+        if password != confirm_password:
+            messages.error(request, 'Las contraseñas no coinciden.')
+            return redirect('register')
+
         try:
             user = User.objects.create_user(
-                username=email,
+                username=username,  # Ahora usa el username ingresado
                 email=email, 
                 password=password,
                 first_name=first_name,
@@ -27,19 +35,14 @@ def register(request):
             user.is_active = True
             user.save()
 
-            account = Account(user=user, address=address, telephone=telephone)
+            account = Account(user=user, address=address, telephone=telephone, avatar=avatar)
             account.save()
-            # send_mail(
-            #         "Subject here",
-            #         "Here is the message.",
-            #         "from@example.com",
-            #         ["to@example.com"],
-            #         fail_silently=False,
-            #     )
-            messages.success(request, 'Registration successful!')
+
+            messages.success(request, '¡Registro exitoso! Puedes iniciar sesión.')
             return redirect('login')
+
         except IntegrityError:
-            messages.error(request, 'A user with this email already exists.')
+            messages.error(request, 'El nombre de usuario o correo ya están en uso.')
 
     return render(request, 'accounts/register.html')
 

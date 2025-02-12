@@ -2,15 +2,17 @@ from django.shortcuts import render, get_object_or_404
 from .models import Item, ItemCategory
 
 def item_list(request):
-    # Filtrar los objetos que tienen la categoría "Consumable" y ordenarlos por precio
+    # Filtrar los objetos por cada categoría y ordenarlos por precio
     consumables = Item.objects.filter(categories__name__icontains="Consumible").distinct().order_by('price')
-
-    # Filtrar los objetos que NO son consumibles y ordenarlos por precio
-    other_items = Item.objects.exclude(id__in=consumables.values_list('id', flat=True)).order_by('price')
+    relics = Item.objects.filter(categories__name__icontains="Reliquia").distinct().order_by('price')
+    initials = Item.objects.filter(categories__name__icontains="Inicial").distinct().order_by('price')
+    passives = Item.objects.filter(categories__name__icontains="Objeto Pasivo").distinct().order_by('price')
 
     context = {
         'consumables': consumables,
-        'other_items': other_items,
+        'relics': relics,
+        'initials': initials,
+        'passives': passives,
     }
     return render(request, 'objetos/item_list.html', context)
 

@@ -25,6 +25,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),  # Redirige las URLs de la app 'accounts' a su archivo urls.py
     path('items/', include('objetos.urls')),  # Redirige las URLs de la app 'objetos' a su archivo urls.py
     path('gamemodes/', include('gamemodes.urls')),  # Redirige las URLs de la app 'gamemodes' a su archivo urls.py
+    path('news/', include('news.urls')),  # Redirige las URLs de la app 'news' a su archivo urls.py
 
 ]
 
