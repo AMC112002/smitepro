@@ -15,3 +15,6 @@ def split(value, arg):
 def strip(value):
     return value.strip() if isinstance(value, str) else value
 
+@register.filter
+def replace_underscores(value):
+    return value.replace('_', ' ')

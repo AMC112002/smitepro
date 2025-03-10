@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">{{ tierlist.name }}</h2>
+    <ul class="list-group">
+        {% for tier in tierlist.tiers.all %}
+            <li class="list-group-item">
+                {{ tier.god.name }} - {{ tier.get_tier_display }}
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

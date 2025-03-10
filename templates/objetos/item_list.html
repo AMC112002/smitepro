@@ -79,10 +79,125 @@
     {% endif %}
 
     <!-- Sección de Reliquias -->
-    {% if relics %}
+    {% if relics_base or relics_fragment or relics_tier1 or relics_tier2 or relics_tier3 %}
     <h2 class="text-warning mt-4">Reliquias</h2>
+
+    {% if relics_base %}
+    <h3 class="text-primary">Base</h3>
     <div class="row">
-        {% for item in relics %}
+        {% for item in relics_base %}
+        <div class="col-6 col-sm-4 col-md-2 col-lg-2">
+            <a href="{% url 'item_detail' item.id %}" class="card-link">
+                <div class="card text-white bg-dark mb-2">
+                    {% if item.image %}
+                    <img src="{{ item.image.url }}" class="card-img-top img-fluid" alt="{{ item.name }}">
+                    {% endif %}
+                    <div class="card-body p-2">
+                        <h6 class="card-title">{{ item.name }}</h6>
+                        <p class="text-warning"><strong>Precio:</strong> {{ item.price }} oro</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if relics_fragment %}
+    <h3 class="text-primary">Fragmentos</h3>
+    <div class="row">
+        {% for item in relics_fragment %}
+        <div class="col-6 col-sm-4 col-md-2 col-lg-2">
+            <a href="{% url 'item_detail' item.id %}" class="card-link">
+                <div class="card text-white bg-dark mb-2">
+                    {% if item.image %}
+                    <img src="{{ item.image.url }}" class="card-img-top img-fluid" alt="{{ item.name }}">
+                    {% endif %}
+                    <div class="card-body p-2">
+                        <h6 class="card-title">{{ item.name }}</h6>
+                        <p class="text-warning"><strong>Precio:</strong> {{ item.price }} oro</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if relics_tier1 %}
+    <h3 class="text-primary">Tiers 1</h3>
+    <div class="row">
+        {% for item in relics_tier1 %}
+        <div class="col-6 col-sm-4 col-md-2 col-lg-2">
+            <a href="{% url 'item_detail' item.id %}" class="card-link">
+                <div class="card text-white bg-dark mb-2">
+                    {% if item.image %}
+                    <img src="{{ item.image.url }}" class="card-img-top img-fluid" alt="{{ item.name }}">
+                    {% endif %}
+                    <div class="card-body p-2">
+                        <h6 class="card-title">{{ item.name }}</h6>
+                        <p class="text-warning"><strong>Precio:</strong> {{ item.price }} oro</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if relics_tier2 %}
+    <h3 class="text-primary">Reliquias Tier 2</h3>
+    <div class="row">
+        {% for item in relics_tier2 %}
+        <div class="col-6 col-sm-4 col-md-2 col-lg-2">
+            <a href="{% url 'item_detail' item.id %}" class="card-link">
+                <div class="card text-white bg-dark mb-2">
+                    {% if item.image %}
+                    <img src="{{ item.image.url }}" class="card-img-top img-fluid" alt="{{ item.name }}">
+                    {% endif %}
+                    <div class="card-body p-2">
+                        <h6 class="card-title">{{ item.name }}</h6>
+                        <p class="text-warning"><strong>Precio:</strong> {{ item.price }} oro</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if relics_tier3 %}
+    <h3 class="text-primary">Reliquias Tier 3</h3>
+    <div class="row">
+        {% for item in relics_tier3 %}
+        <div class="col-6 col-sm-4 col-md-2 col-lg-2">
+            <a href="{% url 'item_detail' item.id %}" class="card-link">
+                <div class="card text-white bg-dark mb-2">
+                    {% if item.image %}
+                    <img src="{{ item.image.url }}" class="card-img-top img-fluid" alt="{{ item.name }}">
+                    {% endif %}
+                    <div class="card-body p-2">
+                        <h6 class="card-title">{{ item.name }}</h6>
+                        <p class="text-warning"><strong>Precio:</strong> {{ item.price }} oro</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% endif %}
+
+
+    <!-- Sección de Iniciales -->
+    {% if initials_tier1 or initials_tier2 %}
+    <h2 class="text-warning mt-4">Objetos Iniciales</h2>
+
+    {% if initials_tier1 %}
+    <h3 class="text-primary">Tier 1</h3>
+    <div class="row">
+        {% for item in initials_tier1 %}
         <div class="col-6 col-sm-4 col-md-2 col-lg-2 custom-col-consumables">
             <a href="{% url 'item_detail' item.id %}" class="card-link">
                 <div class="card text-white bg-dark mb-2">
@@ -100,11 +215,10 @@
     </div>
     {% endif %}
 
-    <!-- Sección de Iniciales -->
-    {% if initials %}
-    <h2 class="text-warning mt-4">Iniciales</h2>
+    {% if initials_tier2 %}
+    <h3 class="text-primary">Tier 2</h3>
     <div class="row">
-        {% for item in initials %}
+        {% for item in initials_tier2 %}
         <div class="col-6 col-sm-4 col-md-2 col-lg-2 custom-col-consumables">
             <a href="{% url 'item_detail' item.id %}" class="card-link">
                 <div class="card text-white bg-dark mb-2">
@@ -120,13 +234,17 @@
         </div>
         {% endfor %}
     </div>
+    {% endif %}
     {% endif %}
 
     <!-- Sección de Pasivos -->
-    {% if passives %}
+    {% if passives_tier1 or passives_tier2 or passives_tier3 %}
     <h2 class="text-warning mt-4">Objetos Pasivos</h2>
+
+    {% if passives_tier1 %}
+    <h3 class="text-primary">Tier 1</h3>
     <div class="row">
-        {% for item in passives %}
+        {% for item in passives_tier1 %}
         <div class="col-6 col-sm-4 col-md-2 col-lg-2 custom-col-consumables">
             <a href="{% url 'item_detail' item.id %}" class="card-link">
                 <div class="card text-white bg-dark mb-2">
@@ -142,6 +260,49 @@
         </div>
         {% endfor %}
     </div>
+    {% endif %}
+
+    {% if passives_tier2 %}
+    <h3 class="text-primary">Tier 2</h3>
+    <div class="row">
+        {% for item in passives_tier2 %}
+        <div class="col-6 col-sm-4 col-md-2 col-lg-2 custom-col-consumables">
+            <a href="{% url 'item_detail' item.id %}" class="card-link">
+                <div class="card text-white bg-dark mb-2">
+                    {% if item.image %}
+                    <img src="{{ item.image.url }}" class="card-img-top img-fluid" alt="{{ item.name }}">
+                    {% endif %}
+                    <div class="card-body p-2">
+                        <h6 class="card-title">{{ item.name }}</h6>
+                        <p class="text-warning"><strong>Precio:</strong> {{ item.price }} oro</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if passives_tier3 %}
+    <h3 class="text-primary">Tier 3</h3>
+    <div class="row">
+        {% for item in passives_tier3 %}
+        <div class="col-6 col-sm-4 col-md-2 col-lg-2 custom-col-consumables">
+            <a href="{% url 'item_detail' item.id %}" class="card-link">
+                <div class="card text-white bg-dark mb-2">
+                    {% if item.image %}
+                    <img src="{{ item.image.url }}" class="card-img-top img-fluid" alt="{{ item.name }}">
+                    {% endif %}
+                    <div class="card-body p-2">
+                        <h6 class="card-title">{{ item.name }}</h6>
+                        <p class="text-warning"><strong>Precio:</strong> {{ item.price }} oro</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
     {% endif %}
 </div>
 {% endblock %}

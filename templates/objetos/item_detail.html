@@ -1,71 +1,176 @@
 {% extends 'base.html' %}
 
+{% load custom_filters %}
+
 {% block title %}Detalles del Objeto - {{ item.name }}{% endblock %}
 
 {% block content %}
-<style>
-    .item-detail {
-        margin-top: 30px;
-    }
-
-    .item-detail h2 {
-        font-size: 2rem;
-        color: #ffc107;
-    }
-
-    .item-image {
-        max-width: 300px;
-        margin-right: 30px;
-    }
-
-    .item-stats {
-        margin-top: 20px;
-    }
-
-    .item-stats p {
-        font-size: 1rem;
-    }
-
-    .item-description {
-        margin-top: 20px;
-        font-size: 1.1rem;
-    }
-
-    .item-price {
-        font-size: 1.2rem;
-        color: #ff5722;
-    }
-</style>
-
-<div class="container my-5 item-detail">
-    <h1 class="text-center mb-4 text-light display-4 title-effect">{{ item.name }}</h1>
-    <div class="row">
-        <div class="col-md-6">
-            {% if item.image %}
-                <img src="{{ item.image.url }}" class="img-fluid item-image" alt="{{ item.name }}">
-            {% endif %}
-        </div>
-        <div class="col-md-6">
-            <h2>Detalles:</h2>
-            <div class="item-description">
-                <p>{{ item.description }}</p>
-            </div>
-
-            <div class="item-price">
-                <p><strong>Precio:</strong> {{ item.price }} oro</p>
-            </div>
-
-            {% if item.stats %}
-                <div class="item-stats">
-                    <h3>Stats:</h3>
-                    <p>{{ item.stats }}</p>
+<div class="container-fluid py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Tarjeta principal de detalles del objeto -->
+            <div class="card bg-dark text-light border-0 mb-4 position-relative overflow-hidden">
+                {% if item.image %}
+                <div class="position-absolute w-100 h-100" style="background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.8)), url({{ item.image.url }}); background-size: cover; background-position: center; filter: blur(8px); transform: scale(1.1);"></div>
+                {% endif %}
+                
+                <div class="card-body position-relative p-4 p-md-5">
+                    <div class="row align-items-center">
+                        {% if item.image %}
+                        <div class="col-md-4 text-center mb-4 mb-md-0">
+                            <img src="{{ item.image.url }}" alt="{{ item.name }}" class="img-fluid rounded border border-4 border-warning shadow" style="max-width: 250px; aspect-ratio: 1/1; object-fit: cover;">
+                        </div>
+                        {% endif %}
+                        
+                        <div class="col-md {% if not item.image %}text-center{% endif %}">
+                            <h1 class="display-3 fw-bold mb-3">{{ item.name }}</h1>
+                            <div class="d-flex flex-wrap justify-content-{% if not item.image %}center{% else %}start{% endif %} align-items-center gap-3 mb-3">
+                                <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+                                    <i class="fas fa-coins me-2"></i>{{ item.price }} oro
+                                </span>
+                                {% if item.tier %}
+                                <span class="badge bg-info fs-6 px-3 py-2">
+                                    <i class="fas fa-layer-group me-2"></i>
+                                    {% if item.tier == 'Glyph' %}
+                                        Glifo
+                                    {% else %}
+                                        Tier {{ item.tier }}
+                                    {% endif %}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            {% endif %}
+            </div>
+
+            <!-- Sección de descripción y detalles -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Descripción -->
+                    <div class="card bg-dark text-light border-0 mb-4">
+                        <div class="card-body p-4">
+                            <h3 class="card-title border-bottom pb-2 mb-3">
+                                <i class="fas fa-scroll me-2"></i>Descripción
+                            </h3>
+                            <p class="card-text fs-5 lh-lg">{{ item.description }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Estadísticas -->
+                    {% if item.stats %}
+                    <div class="card bg-dark text-light border-0 mb-4">
+                        <div class="card-header bg-warning bg-opacity-75 py-3">
+                            <h3 class="card-title mb-0">
+                                <i class="fas fa-chart-bar me-2"></i>Estadísticas
+                            </h3>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row">
+                                {% for stat_name, stat_value in item.stats.items %}
+                                    <div class="col-md-4 mb-3">
+                                        <div class="bg-dark bg-opacity-50 p-3 rounded h-100 d-flex align-items-center">
+                                            <div class="w-100">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <h5 class="mb-0 text-capitalize">
+                                                        {% if stat_name == 'physical_protection' %}
+                                                            <i class="fas fa-shield-alt me-2 text-primary"></i>Protección Física
+                                                        {% elif stat_name == 'magical_protection' %}
+                                                            <i class="fas fa-magic me-2 text-info"></i>Protección Mágica
+                                                        {% elif stat_name == 'health' %}
+                                                            <i class="fas fa-heart me-2 text-danger"></i>Salud
+                                                        {% elif stat_name == 'mana' %}
+                                                            <i class="fas fa-tint me-2 text-primary"></i>Maná
+                                                        {% elif stat_name == 'power' %}
+                                                            <i class="fas fa-bolt me-2 text-warning"></i>Poder
+                                                        {% elif stat_name == 'attack_speed' %}
+                                                            <i class="fas fa-tachometer-alt me-2 text-success"></i>Velocidad de Ataque
+                                                        {% else %}
+                                                            <i class="fas fa-chart-line me-2 text-secondary"></i>{{ stat_name|title|replace_underscores}}
+                                                        {% endif %}
+                                                    </h5>
+                                                    <span class="badge bg-warning text-dark px-2 py-1">{{ stat_value }}</span>
+                                                </div>
+                                                <div class="progress" style="height: 6px;">
+                                                    <div class="progress-bar 
+                                                        {% if stat_name == 'physical_protection' %}bg-primary
+                                                        {% elif stat_name == 'magical_protection' %}bg-info
+                                                        {% elif stat_name == 'health' %}bg-danger
+                                                        {% elif stat_name == 'mana' %}bg-primary
+                                                        {% elif stat_name == 'power' %}bg-warning
+                                                        {% elif stat_name == 'attack_speed' %}bg-success
+                                                        {% else %}bg-secondary{% endif %}" 
+                                                        role="progressbar" 
+                                                        style="width: {% if stat_value > 100 %}100{% else %}{{ stat_value }}{% endif %}%">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Tarjeta adicional de información -->
+                <div class="col-lg-4">
+                    <div class="card bg-dark text-light border-0 mb-4">
+                        <div class="card-header bg-secondary bg-opacity-75 py-3">
+                            <h3 class="card-title mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Detalles del Objeto
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item bg-transparent text-light border-secondary d-flex justify-content-between align-items-center py-3">
+                                    <span class="fw-bold">
+                                        <i class="fas fa-tags me-2 text-warning"></i>Precio Base
+                                    </span>
+                                    <span>{{ item.price }} oro</span>
+                                </li>
+                                {% if item.total_price %}
+                                <li class="list-group-item bg-transparent text-light border-secondary d-flex justify-content-between align-items-center py-3">
+                                    <span class="fw-bold">
+                                        <i class="fas fa-coins me-2 text-success"></i>Precio Total
+                                    </span>
+                                    <span>{{ item.total_price }} oro</span>
+                                </li>
+                                {% endif %}
+                                {% if item.from_item %}
+                                <li class="list-group-item bg-transparent text-light border-secondary d-flex justify-content-between align-items-center py-3">
+                                    <span class="fw-bold">
+                                        <i class="fas fa-level-up-alt me-2 text-info"></i>Evolución de
+                                    </span>
+                                    <span>{{ item.from_item.name }}</span>
+                                </li>
+                                {% endif %}
+                                {% if item.categories.exists %}
+                                <li class="list-group-item bg-transparent text-light d-flex justify-content-between align-items-center py-3">
+                                    <span class="fw-bold">
+                                        <i class="fas fa-box-open me-2 text-primary"></i>Categorías
+                                    </span>
+                                    <div>
+                                        {% for category in item.categories.all %}
+                                            <span class="badge bg-info me-1">{{ category.name }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón de regreso -->
+            <div class="text-center mt-4">
+                <a href="{% url 'item_list' %}" class="btn btn-outline-warning btn-lg px-4">
+                    <i class="fas fa-arrow-left me-2"></i>Volver a la lista de objetos
+                </a>
+            </div>
         </div>
     </div>
-</div>
-
-<div class="text-center mt-4">
-    <a href="{% url 'item_list' %}" class="btn btn-warning">Volver a la lista de objetos</a>
 </div>
 {% endblock %}

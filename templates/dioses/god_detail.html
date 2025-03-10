@@ -1,58 +1,201 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ god.name }}{% endblock %}
+{% block title %}{{ god.name }} - Detalles{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <h1 class="text-center text-light display-4">{{ god.name }}</h1>
-
-    {% if god.image %}
-        <div class="text-center">
-            <img src="{{ god.image.url }}" alt="{{ god.name }}" class="img-fluid rounded my-4" style="max-width: 300px;">
-        </div>
-    {% endif %}
-
-    {% if god.lore %}
-        <div class="my-4">
-            <h3 class="text-light">Historia</h3>
-            <p>{{ god.lore }}</p>
-        </div>
-    {% endif %}
-
-    <div class="row text-light">
-        <div class="col-md-6">
-            <h3>Información Básica</h3>
-            <p><strong>Panteón:</strong> {{ god.get_pantheon_display }}</p>
-            <p><strong>Rol:</strong> {{ god.get_role_display }}</p>
-            <p><strong>Dificultad:</strong> {{ god.get_difficulty_display }}</p>
-            <p><strong>Tipo de Poder:</strong> {{ god.get_power_display }}</p>
-        </div>
-        <div class="col-md-6">
-            <h3>Estadísticas</h3>
-            <p><strong>Salud:</strong> {{ god.health }}</p>
-            <p><strong>Maná:</strong> {{ god.mana }}</p>
-            <p><strong>Velocidad:</strong> {{ god.speed }}</p>
-            <p><strong>Daño:</strong> {{ god.damage }}</p>
-            <p><strong>Velocidad de Ataque:</strong> {{ god.attack_speed }}</p>
-        </div>
-    </div>
-
-    <div class="my-4">
-        <h3 class="text-light">Habilidades</h3>
-        {% for ability in abilities %}
-            <div class="card mb-3 bg-dark text-light">
-                <div class="card-body">
-                    <h5 class="card-title">{{ ability.name }}</h5>
-                    <p><strong>Tipo:</strong> {{ ability.get_ability_type_display }}</p>
-                    <p><strong>Alcance:</strong> {{ ability.range }}</p>
-                    <p><strong>Radio:</strong> {{ ability.radius }}</p>
-                    <p>{{ ability.description }}</p>
-                    {% if ability.image %}
-                        <img src="{{ ability.image.url }}" alt="{{ ability.name }}" class="img-fluid rounded mt-2">
-                    {% endif %}
+<div class="container-fluid py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Encabezado con imagen -->
+            <div class="card bg-dark text-light border-0 mb-4 position-relative overflow-hidden">
+                {% if god.image %}
+                <div class="position-absolute w-100 h-100" style="background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.8)), url({{ god.image.url }}); background-size: cover; background-position: center; filter: blur(8px); transform: scale(1.1);"></div>
+                {% endif %}
+                <div class="card-body position-relative p-4 p-md-5">
+                    <div class="row align-items-center">
+                        {% if god.image %}
+                        <div class="col-md-4 text-center mb-4 mb-md-0">
+                            <img src="{{ god.image.url }}" alt="{{ god.name }}" class="img-fluid rounded-circle border border-4 border-light shadow" style="max-width: 220px; aspect-ratio: 1/1; object-fit: cover;">
+                        </div>
+                        {% endif %}
+                        <div class="col-md {% if not god.image %}text-center{% endif %}">
+                            <h1 class="display-3 fw-bold mb-2">{{ god.name }}</h1>
+                            <div class="d-flex flex-wrap justify-content-{% if not god.image %}center{% else %}start{% endif %} gap-2 mb-3">
+                                <span class="badge bg-primary fs-6 px-3 py-2">{{ god.get_pantheon_display }}</span>
+                                <span class="badge bg-info fs-6 px-3 py-2">{{ god.get_role_display }}</span>
+                                <span class="badge bg-warning text-dark fs-6 px-3 py-2">{{ god.get_power_display }}</span>
+                            </div>
+                            <div class="badge bg-danger px-3 py-2 fs-6">Dificultad: {{ god.get_difficulty_display }}</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        {% endfor %}
+
+            <!-- Historia -->
+            {% if god.lore %}
+            <div class="card bg-dark text-light border-0 mb-4">
+                <div class="card-body p-4">
+                    <h3 class="card-title border-bottom pb-2 mb-3">
+                        <i class="fas fa-book me-2"></i>Historia
+                    </h3>
+                    <p class="card-text fs-5 lh-lg">{{ god.lore }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Estadísticas -->
+            <div class="row mb-4">
+                <div class="col-md-6 mb-4 mb-md-0">
+                    <div class="card bg-dark text-light h-100 border-0">
+                        <div class="card-header bg-primary bg-opacity-75 py-3">
+                            <h3 class="card-title mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Información Básica
+                            </h3>
+                        </div>
+                        <div class="card-body p-4">
+                            <ul class="list-group list-group-flush bg-transparent">
+                                <li class="list-group-item bg-transparent text-light border-bottom border-secondary py-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="fw-bold">Panteón</span>
+                                        <span>{{ god.get_pantheon_display }}</span>
+                                    </div>
+                                </li>
+                                <li class="list-group-item bg-transparent text-light border-bottom border-secondary py-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="fw-bold">Rol</span>
+                                        <span>{{ god.get_role_display }}</span>
+                                    </div>
+                                </li>
+                                <li class="list-group-item bg-transparent text-light border-bottom border-secondary py-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="fw-bold">Dificultad</span>
+                                        <span>{{ god.get_difficulty_display }}</span>
+                                    </div>
+                                </li>
+                                <li class="list-group-item bg-transparent text-light py-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="fw-bold">Tipo de Poder</span>
+                                        <span>{{ god.get_power_display }}</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card bg-dark text-light h-100 border-0">
+                        <div class="card-header bg-success bg-opacity-75 py-3">
+                            <h3 class="card-title mb-0">
+                                <i class="fas fa-chart-bar me-2"></i>Estadísticas
+                            </h3>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="mb-3">
+                                <label class="form-label d-flex justify-content-between mb-1">
+                                    <span class="fw-bold">Salud</span>
+                                    <span>{{ god.health }}</span>
+                                </label>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-danger" role="progressbar" style="width: {{ god.health }}%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label d-flex justify-content-between mb-1">
+                                    <span class="fw-bold">Maná</span>
+                                    <span>{{ god.mana }}</span>
+                                </label>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ god.mana }}%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label d-flex justify-content-between mb-1">
+                                    <span class="fw-bold">Velocidad</span>
+                                    <span>{{ god.speed }}</span>
+                                </label>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: {{ god.speed }}%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label d-flex justify-content-between mb-1">
+                                    <span class="fw-bold">Daño</span>
+                                    <span>{{ god.damage }}</span>
+                                </label>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: {{ god.damage }}%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="form-label d-flex justify-content-between mb-1">
+                                    <span class="fw-bold">Velocidad de Ataque</span>
+                                    <span>{{ god.attack_speed }}</span>
+                                </label>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ god.attack_speed }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Habilidades -->
+            <div class="card bg-dark text-light border-0 mb-4">
+                <div class="card-header bg-warning text-dark bg-opacity-75 py-3">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-bolt me-2"></i>Habilidades
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        {% for ability in abilities %}
+                            <div class="col-lg-6 mb-4">
+                                <div class="card h-100 bg-dark bg-opacity-50 border border-secondary">
+                                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                                        <h5 class="card-title mb-0 text-light">{{ ability.name }}</h5>
+                                        <span class="badge {% if ability.ability_type == 'passive' %}bg-secondary{% elif ability.ability_type == 'ultimate' %}bg-danger{% else %}bg-info{% endif %} px-3 py-2">
+                                            {{ ability.get_ability_type_display }}
+                                        </span>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row mb-3">
+                                            <div class="col-6">
+                                                <div class="d-flex align-items-center text-light">
+                                                    <i class="fas fa-arrows-alt me-2 text-info"></i>
+                                                    <span class="fw-bold me-2 text-light">Alcance:</span>
+                                                    <span>{{ ability.range }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="d-flex align-items-center text-light">
+                                                    <i class="fas fa-circle me-2 text-warning"></i>
+                                                    <span class="fw-bold me-2 text-light">Radio:</span>
+                                                    <span>{{ ability.radius }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p class="card-text text-light">{{ ability.description }}</p>
+                                        {% if ability.image %}
+                                            <div class="text-center mt-3">
+                                                <img src="{{ ability.image.url }}" alt="{{ ability.name }}" class="img-fluid rounded" style="max-height: 150px;">
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón de regreso -->
+            <div class="text-center mt-4">
+                <a href="{% url 'gods_by_pantheon' %}" class="btn btn-outline-light btn-lg px-4">
+                    <i class="fas fa-arrow-left me-2"></i>Volver a la lista de dioses
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
