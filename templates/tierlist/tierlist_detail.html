@@ -1,14 +1,362 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container py-5">
-    <h2 class="mb-4">{{ tierlist.name }}</h2>
-    <ul class="list-group">
-        {% for tier in tierlist.tiers.all %}
-            <li class="list-group-item">
-                {{ tier.god.name }} - {{ tier.get_tier_display }}
-            </li>
-        {% endfor %}
-    </ul>
-</div>
+  <div class="tierlist-header">
+    <h1>{{ tierlist.name }}</h1>
+    <p>{{ tierlist.description }}</p>
+    <div class="tierlist-meta">
+      <span class="creator">Por: {{ tierlist.user.username }}</span>
+      <span class="date">Creado: {{ tierlist.created_at|date:"d M, Y" }}</span>
+    </div>
+  </div>
+
+  <div id="tierlist-container" class="tierlist-container">
+    {% for tier_name in tier_names %}
+      <div class="tier tier-{{ tier_name }}" data-tier="{{ tier_name }}">
+        <div class="tier-label">{{ tier_name }}</div>
+        <div id="tier-{{ tier_name }}" class="tier-content">
+          {% for tier in tiers %}
+            {% if tier.tier == tier_name %}
+              <div class="tier-item" data-tier="{{ tier_name }}" data-god-id="{{ tier.god.id }}">
+                <div class="god-image-container">
+                  {% if tier.god.image %}
+                    <img src="{{ tier.god.image.url }}" alt="{{ tier.god.name }}" class="god-image">
+                  {% else %}
+                    <div class="god-image-placeholder">{{ tier.god.name|first }}</div>
+                  {% endif %}
+                </div>
+                <span class="god-name">{{ tier.god.name }}</span>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="tierlist-actions">
+    {% if user.is_authenticated and user == tierlist.user %}
+        <a href="{% url 'my_tierlists' %}" class="btn btn-secondary">Volver</a>
+        <a href="#" class="btn btn-primary">Editar</a>
+        <a href="#" class="btn btn-danger">Eliminar</a>
+    {% else %}
+        <a href="{% url 'community_tierlists' %}" class="btn btn-secondary">Volver</a>
+    {% endif %}
+  </div>
+
+{% endblock %}
+
+
+{% block extra_css %}
+  <style>
+    :root {
+      --background: #121212;
+      --surface: #1e1e1e;
+      --surface-light: #2a2a2a;
+      --primary: #bb86fc;
+      --primary-dark: #9d4edd;
+      --text-primary: #e1e1e1;
+      --text-secondary: #b0b0b0;
+      --border: #333333;
+      
+      /* Tier Colors */
+      --s-tier: #ff4655;
+      --a-tier: #ff8c41;
+      --b-tier: #ffdc5e;
+      --c-tier: #4ade80;
+      --d-tier: #38bdf8;
+      --f-tier: #f472b6;
+    }
+
+    body {
+      background-color: var(--background);
+      color: var(--text-primary);
+      font-family: 'Poppins', 'Segoe UI', sans-serif;
+    }
+
+    .tierlist-header {
+      text-align: center;
+      margin: 40px auto;
+      max-width: 800px;
+      padding: 20px;
+      background-color: var(--surface);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tierlist-header:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--s-tier), var(--a-tier), var(--b-tier), var(--c-tier), var(--d-tier), var(--f-tier));
+    }
+
+    .tierlist-header h1 {
+      font-size: 42px;
+      color: var(--primary);
+      margin-bottom: 16px;
+      font-weight: 700;
+      text-shadow: 0 0 10px rgba(187, 134, 252, 0.3);
+    }
+
+    .tierlist-header p {
+      font-size: 18px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .tierlist-meta {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border);
+      padding-top: 15px;
+      margin-top: 10px;
+    }
+
+    .tierlist-meta .creator {
+      display: flex;
+      align-items: center;
+    }
+
+    .tierlist-meta .creator:before {
+      content: '👤';
+      margin-right: 6px;
+    }
+
+    .tierlist-meta .date:before {
+      content: '📅';
+      margin-right: 6px;
+    }
+
+    .tierlist-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 1200px;
+      margin: 0 auto 40px;
+      padding: 0 20px;
+    }
+
+    .tier {
+      display: flex;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+      transition: transform 0.2s ease;
+    }
+
+    .tier:hover {
+      transform: translateY(-3px);
+    }
+
+    .tier-label {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 80px;
+      min-width: 80px;
+      font-size: 36px;
+      font-weight: 800;
+      color: rgba(0, 0, 0, 0.7);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Tier color classes */
+    .tier-S .tier-label { background-color: var(--s-tier); }
+    .tier-A .tier-label { background-color: var(--a-tier); }
+    .tier-B .tier-label { background-color: var(--b-tier); }
+    .tier-C .tier-label { background-color: var(--c-tier); }
+    .tier-D .tier-label { background-color: var(--d-tier); }
+    .tier-F .tier-label { background-color: var(--f-tier); }
+
+    .tier-content {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 20px;
+      background-color: var(--surface);
+      flex-grow: 1;
+      align-items: center;
+    }
+
+    .tier-item {
+      background-color: var(--surface-light);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.3s ease;
+      width: 100px;
+      height: 130px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .tier-S .tier-item { border-top: 3px solid var(--s-tier); }
+    .tier-A .tier-item { border-top: 3px solid var(--a-tier); }
+    .tier-B .tier-item { border-top: 3px solid var(--b-tier); }
+    .tier-C .tier-item { border-top: 3px solid var(--c-tier); }
+    .tier-D .tier-item { border-top: 3px solid var(--d-tier); }
+    .tier-F .tier-item { border-top: 3px solid var(--f-tier); }
+
+    .tier-item:hover {
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      z-index: 2;
+    }
+
+    .god-image-container {
+      width: 60px;
+      height: 60px;
+      overflow: hidden;
+      border-radius: 50%;
+      margin-bottom: 12px;
+      border: 3px solid var(--primary);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .god-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+      transition: transform 0.5s ease;
+    }
+
+    .tier-item:hover .god-image {
+      transform: scale(1.1);
+    }
+
+    .god-image-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--primary-dark);
+      color: white;
+      font-weight: bold;
+      font-size: 24px;
+    }
+
+    .god-name {
+      font-size: 14px;
+      color: var(--text-primary);
+      text-align: center;
+      font-weight: 500;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      line-height: 1.3;
+    }
+
+    .tierlist-actions {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin: 40px 0;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 16px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      border: none;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: #121212;
+    }
+
+    .btn-secondary {
+      background-color: var(--surface-light);
+      color: var(--text-primary);
+    }
+
+    .btn-danger {
+      background-color: var(--s-tier);
+      color: #ffffff;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .tierlist-header h1 {
+        font-size: 32px;
+      }
+
+      .tier-label {
+        width: 60px;
+        min-width: 60px;
+        font-size: 28px;
+      }
+
+      .tier-content {
+        padding: 12px;
+        gap: 10px;
+      }
+
+      .tier-item {
+        width: 80px;
+        height: 110px;
+      }
+
+      .god-image-container {
+        width: 50px;
+        height: 50px;
+      }
+
+      .god-name {
+        font-size: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .tierlist-meta {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .tier-label {
+        width: 50px;
+        min-width: 50px;
+        font-size: 24px;
+      }
+
+      .tier-item {
+        width: 70px;
+        height: 100px;
+      }
+
+      .btn {
+        padding: 10px 16px;
+        font-size: 14px;
+      }
+    }
+  </style>
 {% endblock %}

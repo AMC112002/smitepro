@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+  .tierlist-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: linear-gradient(to bottom, #2c3e50, #1a1a2e);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .tierlist-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  .banner-bg {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .banner-bg::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('{% static "tierlist/banner-1.jpg" %}') center/cover;
+    opacity: 0.1;
+    z-index: 0;
+  }
+  .tier-badge {
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+    text-align: center;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .tier-S { background-color: #FF9900; color: white; }
+  .tier-A { background-color: #FF5757; color: white; }
+  .tier-B { background-color: #A347FF; color: white; }
+  .tier-C { background-color: #57C9FF; color: white; }
+  .tier-D { background-color: #57FF8F; color: white; }
+  .tier-F { background-color: #8C8C8C; color: white; }
+  
+  .btn-primary-custom {
+    background: linear-gradient(135deg, #533483 0%, #8367C7 100%);
+    color: white;
+    transition: all 0.3s ease;
+  }
+  .btn-primary-custom:hover {
+    background: linear-gradient(135deg, #8367C7 0%, #533483 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(131, 103, 199, 0.4);
+  }
+  
+  .btn-outline-custom {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    background-color: rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+  }
+  .btn-outline-custom:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+  
+  .search-input {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+  .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+  }
+  .search-input:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 0 3px rgba(131, 103, 199, 0.3);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5 text-light">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <!-- Banner con navegación -->
+      <div class="banner-bg card border-0 mb-4 position-relative">
+        <div class="card-body p-4 p-md-5 position-relative">
+            <div class="row align-items-center">
+            <div class="col-md-7 mb-4 mb-md-0">
+              <h1 class="display-4 fw-bold mb-2 text-light">{{ title }}</h1>
+              <p class="fs-5 text-light opacity-75">Clasifica a los dioses y comparte con la comunidad</p>
+            </div>
+            <div class="col-md-5 text-md-end">
+              <div class="d-flex flex-wrap justify-content-md-end justify-content-center gap-2">
+                <a href="{% url 'community_tierlists' %}" class="btn btn-outline-custom px-4 py-2">
+                  <i class="fas fa-users me-2"></i>Comunidad
+                </a>
+                <a href="{% url 'my_tierlists' %}" class="btn btn-outline-custom px-4 py-2">
+                  <i class="fas fa-user me-2"></i>Mis Tierlists
+                </a>
+                <a href="{% url 'create_tierlist' %}" class="btn btn-primary-custom px-4 py-2">
+                  <i class="fas fa-plus me-2"></i>Crear
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Encabezado y búsqueda -->
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+        <h2 class="fs-1 fw-bold mb-3 mb-md-0">{{ title }}</h2>
+        <div class="position-relative">
+          <input type="text" id="search-tierlists" placeholder="Buscar tier lists..." class="form-control search-input ps-4 pe-5 py-2 rounded-pill">
+          <button class="btn position-absolute end-0 top-0 bottom-0 pe-3">
+            <i class="fas fa-search text-light opacity-75"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Listado de Tierlists -->
+      {% if tierlists %}
+        <div class="row g-4">
+          {% for tierlist in tierlists %}
+            <div class="col-md-6 col-lg-4 tierlist-item">
+              <div class="tierlist-card card h-100 text-light">
+                <div class="card-body p-4">
+                  <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h3 class="card-title fs-4 fw-bold text-truncate">{{ tierlist.name }}</h3>
+                    <span class="badge bg-dark bg-opacity-75 px-2 py-1 rounded-pill">
+                      {{ tierlist.created_at|date:"d M Y" }}
+                    </span>
+                  </div>
+                  <p class="card-text text-light text-opacity-75 mb-3" style="height: 48px; overflow: hidden;">{{ tierlist.description }}</p>
+                  
+                  <!-- Vista previa de tiers -->
+                  <div class="d-flex flex-wrap gap-2 mb-4">
+                    {% for tier_name in 'SABCDF' %}
+                      <span class="tier-badge tier-{{ tier_name }}">{{ tier_name }}</span>
+                    {% endfor %}
+                  </div>
+                  
+                  <!-- Footer de la tarjeta -->
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <img src="{% if tierlist.user.account.avatar %}{{ tierlist.user.account.avatar.url }}{% else %}{% static 'images/avatar-placeholder.png' %}{% endif %}" 
+                            alt="{{ tierlist.user.username }}" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">                      
+                        <span class="text-light text-opacity-75">{{ tierlist.user.username }}</span>
+                    </div>
+                    <a href="{% url 'tierlist_detail' tierlist.pk %}" class="btn btn-outline-custom btn-sm">
+                      Ver <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <!-- Estado vacío -->
+        <div class="card bg-dark bg-opacity-25 border border-secondary p-5 text-center">
+          <div class="py-4">
+            <i class="fas fa-list-ol fa-4x mb-3 text-light opacity-50"></i>
+            <h3 class="fs-2 fw-bold text-light mb-3">No hay tier lists disponibles</h3>
+            <p class="text-light text-opacity-75 mb-4">Sé el primero en crear una tier list y compartirla con la comunidad.</p>
+            <a href="{% url 'create_tierlist' %}" class="btn btn-primary-custom px-4 py-2">
+              <i class="fas fa-plus me-2"></i>Crear Tier List
+            </a>
+          </div>
+        </div>
+      {% endif %}
+      
+      <!-- Paginación -->
+      {% if tierlists.has_other_pages %}
+        <div class="d-flex justify-content-center mt-5">
+          <nav aria-label="Paginación de tier lists">
+            <ul class="pagination">
+              {% if tierlists.has_previous %}
+                <li class="page-item">
+                  <a class="page-link bg-dark text-light border-secondary" href="?page={{ tierlists.previous_page_number }}">
+                    <i class="fas fa-chevron-left"></i>
+                  </a>
+                </li>
+              {% endif %}
+              
+              {% for i in tierlists.paginator.page_range %}
+                {% if tierlists.number == i %}
+                  <li class="page-item active">
+                    <span class="page-link bg-primary border-primary">{{ i }}</span>
+                  </li>
+                {% else %}
+                  <li class="page-item">
+                    <a class="page-link bg-dark text-light border-secondary" href="?page={{ i }}">{{ i }}</a>
+                  </li>
+                {% endif %}
+              {% endfor %}
+              
+              {% if tierlists.has_next %}
+                <li class="page-item">
+                  <a class="page-link bg-dark text-light border-secondary" href="?page={{ tierlists.next_page_number }}">
+                    <i class="fas fa-chevron-right"></i>
+                  </a>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Script para la funcionalidad de búsqueda
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-tierlists');
+    const tierlists = document.querySelector('.row.g-4');
+    
+    if (searchInput) {
+        let timeoutId;
+        
+        searchInput.addEventListener('input', function() {
+        clearTimeout(timeoutId);
+        
+        // Add small delay to avoid too many requests while typing
+        timeoutId = setTimeout(function() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            // If search is empty, just reload the current page
+            if (searchTerm === '') {
+            window.location.href = window.location.pathname;
+            return;
+            }
+            
+            // Show loading indicator
+            tierlists.innerHTML = '<div class="col-12 text-center"><div class="spinner-border text-light" role="status"><span class="visually-hidden">Buscando...</span></div></div>';
+            
+            // Send AJAX request
+            fetch(`${window.location.pathname}?search=${encodeURIComponent(searchTerm)}`)
+            .then(response => response.text())
+            .then(html => {
+                // Create a temporary element to parse the HTML
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+                
+                // Extract the tierlists from the response
+                const newTierlists = temp.querySelector('.row.g-4');
+                
+                // Replace current tierlists with new ones
+                if (newTierlists) {
+                tierlists.innerHTML = newTierlists.innerHTML;
+                } else {
+                tierlists.innerHTML = '<div class="col-12"><div class="card bg-dark bg-opacity-25 border border-secondary p-5 text-center"><div class="py-4"><i class="fas fa-search fa-4x mb-3 text-light opacity-50"></i><h3 class="fs-2 fw-bold text-light mb-3">No se encontraron resultados</h3><p class="text-light text-opacity-75 mb-4">Intenta con otros términos de búsqueda.</p></div></div></div>';
+                }
+                
+                // Hide pagination when searching
+                const pagination = document.querySelector('.pagination');
+                if (pagination) {
+                pagination.style.display = 'none';
+                }
+            });
+        }, 300);
+        });
+    }
+    });
+</script>
+{% endblock %}

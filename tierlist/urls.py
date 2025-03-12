@@ -1,8 +1,9 @@
 from django.urls import path
-from .views import TierListCreateView, TierListDetailView, TierListListView
+from . import views
 
 urlpatterns = [
-    path('', TierListListView.as_view(), name='tierlist_list'),
-    path('crear/', TierListCreateView.as_view(), name='tierlist_create'),
-    path('<int:pk>/', TierListDetailView.as_view(), name='tierlist_detail'),
+    path('community/', views.community_tierlists, name='community_tierlists'),
+    path('my/', views.my_tierlists, name='my_tierlists'),
+    path('create/', views.create_tierlist, name='create_tierlist'),
+    path('<int:pk>/', views.tierlist_detail, name='tierlist_detail'),
 ]
