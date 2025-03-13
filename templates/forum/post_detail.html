@@ -1,0 +1,528 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+<div class="forum-container">
+  <div class="forum-header">
+    <h1 class="forum-title">Publicación</h1>
+    <a href="{% url 'forum:post_list' %}" class="btn btn-secondary back-btn">
+      <i class="fas fa-arrow-left"></i> Volver al foro
+    </a>
+  </div>
+
+  <div class="post-detail">
+    <div class="post-detail-header">
+      <div class="category-badge">{{ post.category|default:"General" }}</div>
+      <span class="post-date">{{ post.created_at|date:"d M, Y H:i" }}</span>
+    </div>
+    
+    <h2 class="post-detail-title">{{ post.title }}</h2>
+    
+    <div class="author-info">
+        <img src="{{ post.author.account.avatar.url|default:'/static/images/default-avatar.png' }}" alt="Avatar" class="author-avatar">      <div class="author-details">
+        <span class="author-name">{{ post.author }}</span>
+        <span class="author-stats">
+          <i class="fas fa-comment"></i> {{ post.author.posts.count|default:0 }} publicaciones
+        </span>
+      </div>
+    </div>
+    
+    <div class="post-detail-content">
+      {{ post.content|linebreaks }}
+    </div>
+    
+    <div class="post-actions">
+      {% if user == post.author or user.is_staff %}
+        <a href="{% url 'forum:post_edit' post.pk %}" class="action-btn edit-btn">
+          <i class="fas fa-edit"></i> Editar
+        </a>
+        <a href="{% url 'forum:post_delete' post.pk %}" class="action-btn delete-btn">
+          <i class="fas fa-trash-alt"></i> Eliminar
+        </a>
+      {% endif %}
+      <button class="action-btn share-btn">
+        <i class="fas fa-share-alt"></i> Compartir
+      </button>
+    </div>
+  </div>
+
+  <div class="comments-section">
+    <h3 class="section-title">Comentarios ({{ comments|length }})</h3>
+    
+    {% if comments %}
+      <div class="comments-list">
+        {% for comment in comments %}
+          <div class="comment-card">
+            <div class="comment-header">
+              <div class="comment-author">
+                <img src="{{ comment.author.account.avatar.url|default:'/static/images/default-avatar.png' }}" alt="Avatar" class="comment-avatar">
+                <span class="comment-author-name">{{ comment.author }}</span>
+              </div>
+              <span class="comment-date">{{ comment.created_at|date:"d M, Y H:i" }}</span>
+            </div>
+            <div class="comment-content">
+              {{ comment.content|linebreaks }}
+            </div>
+            {% if user == comment.author or user.is_staff %}
+              <div class="comment-actions">
+                <a href="{% url 'forum:comment_edit' comment.pk %}" class="comment-action edit-comment">
+                  <i class="fas fa-edit"></i> Editar
+                </a>
+                <a href="{% url 'forum:comment_delete' comment.pk %}" class="comment-action delete-comment">
+                  <i class="fas fa-trash-alt"></i> Eliminar
+                </a>
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="no-comments-message">
+        <i class="fas fa-comments"></i>
+        <p>No hay comentarios todavía. ¡Sé el primero en comentar!</p>
+      </div>
+    {% endif %}
+    
+    {% if user.is_authenticated %}
+      <div class="comment-form">
+        <h4 class="form-title">Deja un comentario</h4>
+        <form method="POST">
+          {% csrf_token %}
+          <div class="form-group">
+            {{ form.content }}
+            {% if form.content.errors %}
+              <div class="form-error">{{ form.content.errors }}</div>
+            {% endif %}
+          </div>
+          <button type="submit" class="btn btn-primary submit-btn">
+            <i class="fas fa-paper-plane"></i> Comentar
+          </button>
+        </form>
+      </div>
+    {% else %}
+      <div class="login-message">
+        <i class="fas fa-lock"></i>
+        <p>Debes <a href="{% url 'login' %}">iniciar sesión</a> para comentar</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Variables de colores - Mismas que en el listado del foro */
+  :root {
+    --bg-dark: #121212;
+    --bg-card: #1e1e1e;
+    --bg-hover: #2a2a2a;
+    --primary: #aa00ff;
+    --primary-hover: #cc33ff;
+    --secondary: #00c8ff;
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0b0;
+    --text-muted: #707070;
+    --border-color: #333333;
+    --success: #00b894;
+    --warning: #fdcb6e;
+    --danger: #ff6b6b;
+  }
+
+  /* Contenedor principal */
+  .forum-container {
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    max-width: 1000px;
+    margin: 30px auto;
+  }
+
+  /* Encabezado */
+  .forum-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .forum-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-shadow: 0 0 10px rgba(170, 0, 255, 0.3);
+    margin: 0;
+  }
+
+  .back-btn {
+    background-color: var(--bg-card);
+    color: var(--text-secondary);
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .back-btn:hover {
+    background-color: var(--secondary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 200, 255, 0.3);
+  }
+
+  /* Detalle de la publicación */
+  .post-detail {
+    background-color: var(--bg-card);
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    border-left: 3px solid var(--primary);
+  }
+
+  .post-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .category-badge {
+    background-color: rgba(170, 0, 255, 0.2);
+    color: var(--secondary);
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .post-date {
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  .post-detail-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    color: var(--text-primary);
+  }
+
+  .author-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding-bottom: 20px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .author-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary);
+  }
+
+  .author-details {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .author-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .author-stats {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .post-detail-content {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--text-primary);
+    margin-bottom: 25px;
+  }
+
+  .post-actions {
+    display: flex;
+    gap: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .action-btn {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+
+  .edit-btn:hover {
+    background-color: var(--warning);
+    color: #333;
+  }
+
+  .delete-btn:hover {
+    background-color: var(--danger);
+    color: white;
+  }
+
+  .share-btn:hover {
+    background-color: var(--secondary);
+    color: white;
+  }
+
+  /* Sección de comentarios */
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    color: var(--text-primary);
+    position: relative;
+    padding-left: 15px;
+  }
+
+  .section-title::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 5px;
+    background-color: var(--primary);
+    border-radius: 3px;
+  }
+
+  .comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .comment-card {
+    background-color: var(--bg-card);
+    border-radius: 8px;
+    padding: 20px;
+    transition: transform 0.2s ease;
+    border-left: 2px solid var(--secondary);
+  }
+
+  .comment-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .comment-author {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .comment-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--secondary);
+  }
+
+  .comment-author-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .comment-date {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .comment-content {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+  }
+
+  .comment-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .comment-action {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 5px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .edit-comment:hover {
+    color: var(--warning);
+  }
+
+  .delete-comment:hover {
+    color: var(--danger);
+  }
+
+  /* Formulario de comentarios */
+  .comment-form {
+    background-color: var(--bg-card);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 30px;
+  }
+
+  .form-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 15px 0;
+    color: var(--text-secondary);
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-group textarea {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    font-size: 15px;
+    min-height: 120px;
+    resize: vertical;
+    transition: all 0.3s ease;
+  }
+
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(170, 0, 255, 0.2);
+  }
+
+  .form-error {
+    color: var(--danger);
+    font-size: 14px;
+    margin-top: 5px;
+  }
+
+  .submit-btn {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .submit-btn:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(170, 0, 255, 0.3);
+  }
+
+  /* Mensajes */
+  .no-comments-message,
+  .login-message {
+    text-align: center;
+    padding: 30px;
+    background-color: var(--bg-card);
+    border-radius: 8px;
+    color: var(--text-secondary);
+  }
+
+  .no-comments-message i,
+  .login-message i {
+    font-size: 32px;
+    color: var(--text-muted);
+    margin-bottom: 15px;
+  }
+
+  .login-message p a {
+    color: var(--secondary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .login-message p a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+  }
+
+  /* Responsividad */
+  @media (max-width: 768px) {
+    .post-actions {
+      flex-wrap: wrap;
+    }
+    
+    .forum-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+    }
+    
+    .back-btn {
+      align-self: flex-end;
+    }
+    
+    .comment-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    
+    .comment-date {
+      margin-left: 40px;
+    }
+  }
+</style>
+{% endblock %}

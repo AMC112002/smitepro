@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="forum-container">
+  <div class="forum-header">
+    <h1 class="forum-title">Eliminar Comentario</h1>
+    <a href="{% url 'forum:post_detail' post.pk %}" class="btn btn-secondary back-btn">
+      <i class="fas fa-arrow-left"></i> Volver a la publicación
+    </a>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <h3>¿Estás seguro que deseas eliminar este comentario?</h3>
+      <div class="comment-preview">
+        <p><strong>Contenido:</strong> {{ comment.content|truncatechars:100 }}</p>
+        <p><strong>Fecha:</strong> {{ comment.created_at|date:"d M, Y H:i" }}</p>
+      </div>
+      <form method="POST">
+        {% csrf_token %}
+        <div class="form-actions">
+          <button type="submit" class="btn btn-danger">Eliminar</button>
+          <a href="{% url 'forum:post_detail' post.pk %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
