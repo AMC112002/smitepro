@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% block title %}Crear Build{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/build.css' %}">
+
+<div class="card bg-dark">
+    <div class="card-header">
+        <h1><i class="fas fa-plus-circle"></i> Crear Build</h1>
+    </div>
+    <div class="card-body">
+        <form method="post" id="build-form">
+            {% csrf_token %}
+            
+            <div class="form-fields">
+                <!-- Selección del dios -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-god"></i>
+                        <h3>Seleccionar Dios</h3>
+                    </div>
+                    <div class="form-group">
+                        <label for="god" class="form-label">
+                            <i class="fas fa-hand-holding"></i> Dios
+                        </label>
+                        <select name="god" id="god" class="form-control" required>
+                            <option value="">Selecciona un dios</option>
+                            {% for god in gods %}
+                                <option value="{{ god.id }}" {% if god.id|stringformat:"s" == selected_god_id %}selected{% endif %} data-power="{{ god.power }}">{{ god.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Objeto inicial -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-star"></i>
+                        <h3>Objeto Inicial (Tier 2)</h3>
+                    </div>
+                    <div class="items-grid">
+                        {% for item in starter_items %}
+                        <input type="radio" name="starter_item" value="{{ item.id }}" id="starter_item_{{ item.id }}" class="item-selector" {% if item.id == form.starter_item.value %}checked{% endif %}>
+                        <label for="starter_item_{{ item.id }}">
+                            <div class="item-card">
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="item-image">
+                                <div class="item-name">{{ item.name }}</div>
+                                <div class="item-stats">{{ item.stats }}</div>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Objetos pasivos -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-shield-alt"></i>
+                        <h3>Objetos Pasivos (Tier 3)</h3>
+                    </div>
+                    <div class="items-grid" id="passive-items-grid">
+                        {% for item in passive_items %}
+                        <input type="checkbox" name="passive_items" value="{{ item.id }}" id="passive_item_{{ item.id }}" class="item-selector" {% if item.id in form.passive_items.value %}checked{% endif %}>
+                        <label for="passive_item_{{ item.id }}">
+                            <div class="item-card">
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="item-image">
+                                <div class="item-name">{{ item.name }}</div>
+                                <div class="item-stats">{{ item.stats }}</div>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <div class="selection-count" id="passive-count">
+                        <span id="passive-selected">{{ form.passive_items.value|length|default:0 }}</span>/5 Seleccionados
+                    </div>
+                </div>
+
+                <!-- Reliquias -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-gem"></i>
+                        <h3>Reliquias (Tier 3)</h3>
+                    </div>
+                    <div class="items-grid">
+                        {% for item in relics %}
+                        <input type="checkbox" name="relics" value="{{ item.id }}" id="relic_{{ item.id }}" class="item-selector" {% if item.id in form.relics.value %}checked{% endif %}>
+                        <label for="relic_{{ item.id }}">
+                            <div class="item-card">
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="item-image">
+                                <div class="item-name">{{ item.name }}</div>
+                                <div class="item-stats">{{ item.stats }}</div>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <div class="selection-count" id="relic-count">
+                        <span id="relic-selected">{{ form.relics.value|length|default:0 }}</span>/2 Seleccionadas
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Acciones -->
+            <div class="actions">
+                <button type="submit" class="btn">
+                    <i class="fas fa-save"></i> Guardar Build
+                </button>
+                <a href="{% url 'build_list' %}" class="btn btn-outline">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Actualiza el contador de selecciones de objetos pasivos
+        const passiveCheckboxes = document.querySelectorAll('input[name="passive_items"]');
+        const passiveCounter = document.getElementById('passive-selected');
+        const passiveCountDiv = document.getElementById('passive-count');
+        
+        function updatePassiveCount() {
+            const checked = document.querySelectorAll('input[name="passive_items"]:checked').length;
+            passiveCounter.textContent = checked;
+            
+            if (checked === 5) {
+                passiveCountDiv.classList.add('valid');
+                passiveCountDiv.classList.remove('invalid');
+            } else {
+                passiveCountDiv.classList.add('invalid');
+                passiveCountDiv.classList.remove('valid');
+            }
+        }
+        
+        passiveCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updatePassiveCount);
+        });
+        
+        // Actualiza el contador de selecciones de reliquias
+        const relicCheckboxes = document.querySelectorAll('input[name="relics"]');
+        const relicCounter = document.getElementById('relic-selected');
+        const relicCountDiv = document.getElementById('relic-count');
+        
+        function updateRelicCount() {
+            const checked = document.querySelectorAll('input[name="relics"]:checked').length;
+            relicCounter.textContent = checked;
+            
+            if (checked === 2) {
+                relicCountDiv.classList.add('valid');
+                relicCountDiv.classList.remove('invalid');
+            } else {
+                relicCountDiv.classList.add('invalid');
+                relicCountDiv.classList.remove('valid');
+            }
+        }
+        
+        relicCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateRelicCount);
+        });
+        
+        // Actualiza los objetos pasivos al cambiar el dios
+        const godSelect = document.getElementById('god');
+        godSelect.addEventListener('change', function() {
+            // Envía el formulario al cambiar el dios para actualizar los objetos disponibles
+            document.getElementById('build-form').submit();
+        });
+        
+        // Inicializa los contadores
+        updatePassiveCount();
+        updateRelicCount();
+    });
+</script>
+
+{% endblock %}

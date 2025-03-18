@@ -28,6 +28,7 @@ urlpatterns = [
     path('news/', include('news.urls')),  # Redirige las URLs de la app 'news' a su archivo urls.py
     path('tierlist/', include('tierlist.urls')),  # Redirige las URLs de la app 'tierlist' a su archivo urls.py
     path('forum/', include('forum.urls')),  # Redirige las URLs de la app 'forum' a su archivo urls.py
+    path('builds/', include('builds.urls')),  # Redirige las URLs de la app 'builds' a su archivo urls.py
 ]
 
 if settings.DEBUG:

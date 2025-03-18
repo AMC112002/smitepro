@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'news',
     'tierlist',
     'forum',
+    'builds',
 ]
 
 MIDDLEWARE = [
