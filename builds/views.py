@@ -10,14 +10,14 @@ from objetos.models import Item, ItemCategory
 
 # Mostrar las builds de la comunidad
 def build_list(request):
-    god_id = request.GET.get('god')  # Obtener el valor de filtrado desde el query param
-    builds = Build.objects.all().order_by('-created_at')
+    god_id = request.GET.get('god')
+    builds = Build.objects.filter(is_random=False).order_by('-created_at')  # ⭐ Excluir builds randomizer
 
     if god_id:
-        builds = builds.filter(god_id=god_id)  # Filtrar por dios si está seleccionado
+        builds = builds.filter(god_id=god_id)
 
-    gods = God.objects.all()  # Obtener todos los dioses para el formulario de filtrado
-    
+    gods = God.objects.all()
+
     context = {
         'builds': builds,
         'gods': gods,

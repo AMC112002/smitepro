@@ -1,0 +1,355 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="randomizer-container">
+    <div class="smite-header">
+        <div class="logo-container">
+            <h1>RULETA DE DIOSES</h1>
+            <div class="divine-ornament"></div>
+        </div>
+    </div>
+    
+    <div class="card divine-card">
+        <div class="card-header">
+            <h5 class="card-title">SELECCIONA TUS FILTROS</h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.pantheon.id_for_label }}">PANTEÓN</label>
+                            {{ form.pantheon }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.role.id_for_label }}">ROL</label>
+                            {{ form.role }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.difficulty.id_for_label }}">DIFICULTAD</label>
+                            {{ form.difficulty }}
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-divine btn-lg">¡GIRAR LA RULETA!</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {% if history %}
+    <div class="card divine-card history-card mt-4">
+        <div class="card-header">
+            <h5 class="card-title">HISTORIAL DE BATALLAS</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover">
+                    <thead>
+                        <tr>
+                            <th>DIOS</th>
+                            <th>FECHA</th>
+                            <th>ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in history %}
+                        <tr>
+                            <td>
+                                <div class="god-entry">
+                                    <span class="god-name">{{ entry.god.name }}</span>
+                                </div>
+                            </td>
+                            <td>{{ entry.created_at|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                {% if entry.build %}
+                                    <a href="{% url 'randomizer:randomizer_result' entry.id %}" class="btn btn-sm btn-divine-secondary">VER RESULTADO</a>
+                                {% else %}
+                                    <span class="--text-light">NO DISPONIBLE</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    /* Paleta de colores inspirada en Smite */
+    :root {
+        --primary-dark: #141414;
+        --secondary-dark: #1e1e1e;
+        --accent-gold: #d4af37;
+        --accent-blue: #007bff;
+        --text-light: #e0e0e0;
+        --divine-highlight: #3498db;
+        --divine-shadow: #1a1a1a;
+    }
+
+    .randomizer-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .smite-header {
+        text-align: center;
+        margin-bottom: 30px;
+        position: relative;
+    }
+
+    .logo-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .smite-header h1 {
+        color: var(--accent-gold);
+        font-size: 3rem;
+        letter-spacing: 3px;
+        text-shadow: 0 0 10px rgba(212, 175, 55, 0.6);
+        margin-bottom: 20px;
+        text-transform: uppercase;
+        font-weight: bold;
+    }
+
+    .divine-ornament {
+        height: 2px;
+        background: linear-gradient(to right, transparent, var(--accent-gold), transparent);
+        width: 80%;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .divine-ornament:before, .divine-ornament:after {
+        content: '';
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background-color: var(--accent-gold);
+        border-radius: 50%;
+        top: -5px;
+    }
+
+    .divine-ornament:before {
+        left: 20%;
+    }
+
+    .divine-ornament:after {
+        right: 20%;
+    }
+
+    .divine-card {
+        background-color: var(--secondary-dark);
+        border: 1px solid var(--accent-gold);
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+
+    .divine-card .card-header {
+        background: linear-gradient(to right, var(--accent-gold), rgba(212, 175, 55, 0.3));
+        color: var(--primary-dark);
+        padding: 15px 20px;
+        border-bottom: 2px solid var(--accent-gold);
+    }
+
+    .divine-card .card-header h5 {
+        margin: 0;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+
+    .divine-card .card-body {
+        padding: 25px;
+    }
+
+    .btn-divine {
+        background: linear-gradient(to bottom, var(--accent-gold), #a17e1a);
+        color: var(--primary-dark);
+        border: none;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 12px 30px;
+        border-radius: 4px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .btn-divine:hover {
+        background: linear-gradient(to bottom, #f0c351, var(--accent-gold));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-divine-secondary {
+        background: linear-gradient(to bottom, var(--divine-highlight), #1a5276);
+        color: white;
+        border: none;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 6px 12px;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .btn-divine-secondary:hover {
+        background: linear-gradient(to bottom, #5dade2, var(--divine-highlight));
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--accent-gold);
+        letter-spacing: 1px;
+        font-weight: 500;
+    }
+
+    .form-group select {
+        width: 100%;
+        padding: 10px 15px;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: var(--text-light);
+        background-color: rgba(30, 30, 30, 0.8);
+        background-clip: padding-box;
+        border: 1px solid #444;
+        border-radius: 4px;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .form-group select:focus {
+        border-color: var(--accent-gold);
+        box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.25);
+    }
+
+    .table-dark {
+        background-color: var(--secondary-dark);
+        color: var(--text-light);
+    }
+
+    .table-dark thead th {
+        background-color: rgba(0, 0, 0, 0.3);
+        color: var(--accent-gold);
+        border-bottom: 2px solid var(--accent-gold);
+        letter-spacing: 1px;
+        font-weight: bold;
+    }
+
+    .table-dark tbody tr:hover {
+        background-color: rgba(212, 175, 55, 0.1);
+    }
+
+    .god-entry {
+        display: flex;
+        align-items: center;
+    }
+
+    .god-name {
+        font-weight: 600;
+        color: var(--text-light);
+    }
+
+    .history-card {
+        background-color: rgba(20, 20, 20, 0.8);
+    }
+
+    .dark-modal .modal-content {
+        background-color: var(--secondary-dark);
+        color: var(--text-light);
+        border: 1px solid var(--accent-gold);
+    }
+
+    .dark-modal .modal-header {
+        border-bottom: 1px solid var(--accent-gold);
+        background: linear-gradient(to right, var(--accent-gold), rgba(212, 175, 55, 0.3));
+        color: var(--primary-dark);
+    }
+
+    .dark-modal .modal-footer {
+        border-top: 1px solid #444;
+    }
+
+    .dark-modal .close {
+        color: var(--primary-dark);
+        text-shadow: none;
+    }
+
+    .item-frame {
+        background-color: rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--accent-gold);
+        border-radius: 4px;
+        padding: 4px;
+        margin-bottom: 5px;
+        display: inline-block;
+        box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
+    }
+
+    .item-image {
+        max-width: 64px;
+        max-height: 64px;
+        transition: transform 0.2s ease;
+    }
+
+    .item-frame:hover .item-image {
+        transform: scale(1.05);
+    }
+
+    .item-name {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        margin-top: 5px;
+    }
+
+    .divine-subtitle {
+        color: var(--accent-gold);
+        letter-spacing: 1px;
+        position: relative;
+        padding-bottom: 8px;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    .divine-subtitle:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 40px;
+        height: 2px;
+        background-color: var(--accent-gold);
+    }
+
+    .passive-items {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+        padding: 15px 10px;
+    }
+
+    @media (max-width: 768px) {
+        .smite-header h1 {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}

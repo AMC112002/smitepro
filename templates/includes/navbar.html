@@ -52,10 +52,15 @@
                         </a>
                     </li>    
                     <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'randomizer' %}active{% endif %}" href="{% url 'randomizer:randomizer' %}">
+                            <i class="fas fa-random me-2"></i>Randomizer
+                        </a>
+                    </li> 
+                    <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'post_list' %}active{% endif %}" href="{% url 'forum:post_list' %}">
                             <i class="fas fa-comments me-2"></i>Foro
                         </a>
-                    </li>                                                   
+                    </li>                                                  
                 </li>                
                 {% if user.is_authenticated %}
                 <li class="nav-item">

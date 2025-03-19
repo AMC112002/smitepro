@@ -9,6 +9,7 @@ class Build(models.Model):
     starter_item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='starter_builds')
     passive_items = models.ManyToManyField(Item, related_name='passive_builds')
     relics = models.ManyToManyField(Item, related_name='relic_builds')
+    is_random = models.BooleanField(default=False)  # ⭐ Nueva bandera para builds del randomizer
 
     created_at = models.DateTimeField(auto_now_add=True)
 
