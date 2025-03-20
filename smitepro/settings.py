@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'forum',
     'builds',
     'randomizer',
+    'stats',
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    :root {
+        --primary-color: #7e57c2; /* Púrpura */
+        --secondary-color: #303f9f; /* Azul oscuro */
+        --background-dark: #121212;
+        --card-bg: #1e1e1e;
+        --text-primary: #ffffff;
+        --text-secondary: #b0bec5;
+        --accent-color: #ff4081;
+        --border-color: #333333;
+        --nav-active: #673ab7;
+        --hover-color: #512da8;
+    }
+
+    body {
+        background-color: var(--background-dark);
+        color: var(--text-primary);
+    }
+
+    .stats-container {
+        padding: 1.5rem;
+    }
+
+    .stats-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
+    }
+
+    .stats-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        padding: 1.25rem;
+        border-bottom: none;
+    }
+
+    .stats-title {
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .stats-title i {
+        margin-right: 10px;
+        font-size: 1.2em;
+    }
+
+    .stats-body {
+        padding: 1.5rem;
+    }
+
+    .nav-tabs {
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 1.5rem;
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: thin;
+    }
+
+    .nav-tabs .nav-item {
+        margin-bottom: -1px;
+    }
+
+    .nav-tabs .nav-link {
+        color: var(--text-secondary);
+        border: none;
+        border-bottom: 2px solid transparent;
+        border-radius: 0;
+        padding: 0.75rem 1.25rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .nav-tabs .nav-link:hover {
+        color: var(--text-primary);
+        background-color: rgba(126, 87, 194, 0.1);
+        border-color: transparent;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: var(--primary-color);
+        background-color: transparent;
+        border-bottom: 2px solid var(--primary-color);
+    }
+
+    .tab-content {
+        padding: 1rem 0;
+    }
+
+    /* Estilos para gráficos */
+    canvas {
+        max-width: 100%;
+        height: auto !important;
+    }
+
+    /* Personalización de scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--card-bg);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: var(--primary-color);
+        border-radius: 4px;
+    }
+
+    /* Estilos de animación */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .tab-pane {
+        animation: fadeIn 0.5s ease;
+    }
+
+    /* Estilos para tarjetas de estadísticas */
+    .stat-card {
+        background: rgba(30, 30, 30, 0.7);
+        border-left: 4px solid var(--primary-color);
+        border-radius: 6px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        background: rgba(40, 40, 40, 0.8);
+        transform: translateX(5px);
+    }
+
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid stats-container">
+    <div class="row">
+        <div class="col-12">
+            <div class="stats-card">
+                <div class="stats-header">
+                    <h4 class="stats-title">
+                        <i class="fas fa-chart-network"></i>Estadísticas de SmitePro
+                    </h4>
+                </div>
+                <div class="stats-body">
+                    <ul class="nav nav-tabs" id="statsTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == '/stats/' %}active{% endif %}" 
+                               href="{% url 'stats_home' %}">
+                               <i class="fas fa-home me-2"></i>General
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == '/stats/gods/' %}active{% endif %}" 
+                               href="{% url 'god_stats' %}">
+                               <i class="fas fa-bolt me-2"></i>Dioses
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == '/stats/items/' %}active{% endif %}" 
+                               href="{% url 'item_stats' %}">
+                               <i class="fas fa-shield-alt me-2"></i>Objetos
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content">
+                        {% block stats_content %}{% endblock %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}

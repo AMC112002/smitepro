@@ -1,0 +1,226 @@
+{% extends 'stats/base_stats.html' %}
+
+{% block stats_content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h5 class="card-title">Total de Builds</h5>
+                <h2 class="display-4">{{ total_builds }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h5 class="card-title">Dioses Utilizados</h5>
+                <h2 class="display-4">{{ total_gods_used }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h5 class="card-title">Objetos Utilizados</h5>
+                <h2 class="display-4">{{ total_items_used }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h5 class="card-title">Última Actualización</h5>
+                <p class="h4">{% now "j F Y" %}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Top 5 Dioses Más Utilizados</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="topGodsChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Evolución de Builds</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="buildsTimelineChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Top Objetos Iniciales</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="topStartersChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Top Objetos Pasivos</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="topPassivesChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Top Reliquias</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="topRelicsChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Top Gods Chart
+    const topGodsChart = new Chart(
+        document.getElementById('topGodsChart'),
+        {
+            type: 'bar',
+            data: {
+                labels: [{% for god in top_gods %}'{{ god.name }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+                datasets: [{
+                    label: 'Número de builds',
+                    data: [{% for god in top_gods %}{{ god.builds_count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                    backgroundColor: [{% for god in top_gods %}{% if god.power == 'Magical' %}'#FF6384'{% else %}'#36A2EB'{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Builds: ${context.raw}`;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    );
+    
+    // Starters Chart
+    const topStartersChart = new Chart(
+        document.getElementById('topStartersChart'),
+        {
+            type: 'doughnut',
+            data: {
+                labels: [{% for item in top_starters %}'{{ item.name }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+                datasets: [{
+                    data: [{% for item in top_starters %}{{ item.builds_count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                    backgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'
+                    ],
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        }
+    );
+    
+    // Passives Chart
+    const topPassivesChart = new Chart(
+        document.getElementById('topPassivesChart'),
+        {
+            type: 'doughnut',
+            data: {
+                labels: [{% for item in top_passives %}'{{ item.name }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+                datasets: [{
+                    data: [{% for item in top_passives %}{{ item.builds_count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                    backgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'
+                    ],
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        }
+    );
+    
+    // Relics Chart
+    const topRelicsChart = new Chart(
+        document.getElementById('topRelicsChart'),
+        {
+            type: 'doughnut',
+            data: {
+                labels: [{% for item in top_relics %}'{{ item.name }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+                datasets: [{
+                    data: [{% for item in top_relics %}{{ item.builds_count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                    backgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'
+                    ],
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        }
+    );
+    
+    // Timeline Chart
+    fetch('{% url "api_builds_timeline" %}')
+        .then(response => response.json())
+        .then(data => {
+            new Chart(
+                document.getElementById('buildsTimelineChart'),
+                {
+                    type: 'line',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                        }
+                    }
+                }
+            );
+        });
+});
+</script>
+{% endblock %}

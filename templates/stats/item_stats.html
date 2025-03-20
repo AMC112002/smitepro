@@ -1,0 +1,157 @@
+{% extends 'stats/base_stats.html' %}
+
+{% block stats_content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Estadísticas de Uso de Objetos</h5>
+                <div class="d-flex">
+                    <select id="categorySelect" class="form-select form-select-sm me-2">
+                        {% for category in item_categories %}
+                        <option value="{{ category }}">{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                    <select id="periodSelect" class="form-select form-select-sm">
+                        <option value="all">Todo el tiempo</option>
+                        <option value="30">Últimos 30 días</option>
+                        <option value="7">Últimos 7 días</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="itemsChart" style="height: 500px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Top 15 Objetos (<span id="currentCategory">Passive</span>)</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Builds</th>
+                                <th>Porcentaje de uso</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topItemsTable">
+                            <!-- Se llenará con JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let itemsChart;
+    let totalItems = 0;
+    
+    // Función para cargar los datos
+    function loadItemsData(category = 'Passive', days = null) {
+        let url = '{% url "api_items_data" %}?category=' + category;
+        if (days) {
+            url += `&days=${days}`;
+        }
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                // Actualizar el título con la categoría actual
+                document.getElementById('currentCategory').textContent = category;
+                
+                // Destruir gráfico anterior si existe
+                if (itemsChart) {
+                    itemsChart.destroy();
+                }
+                
+                // Calcular el total para porcentajes
+                totalItems = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                
+                // Crear nuevo gráfico
+                itemsChart = new Chart(
+                    document.getElementById('itemsChart'),
+                    {
+                        type: 'bar',
+                        data: data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                }
+                            }
+                        }
+                    }
+                );
+                
+                // Actualizar tabla de top items
+                updateTopItemsTable(data);
+            });
+    }
+    
+    // Función para actualizar la tabla de top objetos
+    function updateTopItemsTable(data) {
+        const tableBody = document.getElementById('topItemsTable');
+        tableBody.innerHTML = '';
+        
+        // Crear objeto con datos por objeto
+        const itemsData = data.labels.map((label, index) => {
+            return {
+                name: label,
+                count: data.datasets[0].data[index],
+                percentage: (data.datasets[0].data[index] / totalItems * 100).toFixed(1)
+            };
+        });
+        
+        // Ordenar por conteo (ya vienen ordenados pero por si acaso)
+        itemsData.sort((a, b) => b.count - a.count);
+        
+        // Agregar filas a la tabla
+        itemsData.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item.name}</td>
+                <td>${item.count}</td>
+                <td>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar" role="progressbar" style="width: ${item.percentage}%;" 
+                             aria-valuenow="${item.percentage}" aria-valuemin="0" aria-valuemax="100">
+                            ${item.percentage}%
+                        </div>
+                    </div>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+    
+    // Cargar datos iniciales
+    loadItemsData();
+    
+    // Manejar cambios en los selectores
+    document.getElementById('categorySelect').addEventListener('change', function() {
+        const category = this.value;
+        const days = document.getElementById('periodSelect').value === 'all' ? null : document.getElementById('periodSelect').value;
+        loadItemsData(category, days);
+    });
+    
+    document.getElementById('periodSelect').addEventListener('change', function() {
+        const days = this.value === 'all' ? null : this.value;
+        const category = document.getElementById('categorySelect').value;
+        loadItemsData(category, days);
+    });
+});
+</script>
+{% endblock %}

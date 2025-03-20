@@ -1,0 +1,190 @@
+{% extends 'stats/base_stats.html' %}
+
+{% block stats_content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Estadísticas de Uso por Dios</h5>
+                <div>
+                    <select id="periodSelect" class="form-select form-select-sm">
+                        <option value="all">Todo el tiempo</option>
+                        <option value="30">Últimos 30 días</option>
+                        <option value="7">Últimos 7 días</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="godsChart" style="height: 500px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Físicos vs Mágicos</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="godTypesChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Top 10 Dioses</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th>Dios</th>
+                                <th>Tipo</th>
+                                <th>Builds</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topGodsTable">
+                            <!-- Se llenará con JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let godsChart;
+    let godTypesChart;
+    
+    // Función para cargar los datos
+    function loadGodsData(days = null) {
+        let url = '{% url "api_gods_data" %}';
+        if (days) {
+            url += `?days=${days}`;
+        }
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                // Destruir gráfico anterior si existe
+                if (godsChart) {
+                    godsChart.destroy();
+                }
+                
+                // Crear nuevo gráfico
+                godsChart = new Chart(
+                    document.getElementById('godsChart'),
+                    {
+                        type: 'bar',
+                        data: data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                }
+                            }
+                        }
+                    }
+                );
+                
+                // Actualizar tipos de dioses
+                updateGodTypes(data);
+                
+                // Actualizar tabla de top dioses
+                updateTopGodsTable(data);
+            });
+    }
+    
+    // Función para actualizar el gráfico de tipos de dioses
+    function updateGodTypes(data) {
+        // Contar dioses físicos y mágicos
+        let physical = 0;
+        let magical = 0;
+        
+        // Asumimos que el backgroundColor indica el tipo
+        data.datasets[0].backgroundColor.forEach((color, index) => {
+            if (color === '#36A2EB') { // Físico
+                physical += data.datasets[0].data[index];
+            } else { // Mágico
+                magical += data.datasets[0].data[index];
+            }
+        });
+        
+        // Destruir gráfico anterior si existe
+        if (godTypesChart) {
+            godTypesChart.destroy();
+        }
+        
+        // Crear gráfico de tipos
+        godTypesChart = new Chart(
+            document.getElementById('godTypesChart'),
+            {
+                type: 'pie',
+                data: {
+                    labels: ['Físicos', 'Mágicos'],
+                    datasets: [{
+                        data: [physical, magical],
+                        backgroundColor: ['#36A2EB', '#FF6384']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            }
+        );
+    }
+    
+    // Función para actualizar la tabla de top dioses
+    function updateTopGodsTable(data) {
+        const tableBody = document.getElementById('topGodsTable');
+        tableBody.innerHTML = '';
+        
+        // Crear objeto con datos por dios
+        const godsData = data.labels.map((label, index) => {
+            return {
+                name: label,
+                type: data.datasets[0].backgroundColor[index] === '#36A2EB' ? 'Físico' : 'Mágico',
+                count: data.datasets[0].data[index]
+            };
+        });
+        
+        // Ordenar por conteo y tomar los primeros 10
+        godsData.sort((a, b) => b.count - a.count);
+        const top10 = godsData.slice(0, 10);
+        
+        // Agregar filas a la tabla
+        top10.forEach(god => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${god.name}</td>
+                <td><span class="badge bg-${god.type === 'Físico' ? 'primary' : 'danger'}">${god.type}</span></td>
+                <td>${god.count}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+    
+    // Cargar datos iniciales
+    loadGodsData();
+    
+    // Manejar cambios en el selector de periodo
+    document.getElementById('periodSelect').addEventListener('change', function() {
+        const days = this.value === 'all' ? null : this.value;
+        loadGodsData(days);
+    });
+});
+</script>
+{% endblock %}

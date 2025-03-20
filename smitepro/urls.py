@@ -30,6 +30,7 @@ urlpatterns = [
     path('forum/', include('forum.urls')),  # Redirige las URLs de la app 'forum' a su archivo urls.py
     path('builds/', include('builds.urls')),  # Redirige las URLs de la app 'builds' a su archivo urls.py
     path('randomizer/', include('randomizer.urls')),  # Redirige las URLs de la app 'randomizer' a su archivo urls.py
+    path('stats/', include('stats.urls')),  # Redirige las URLs de la app 'stats' a su archivo urls.py
 ]
 
 if settings.DEBUG:
