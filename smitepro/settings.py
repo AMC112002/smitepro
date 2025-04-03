@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'builds',
     'randomizer',
     'stats',
+    'chat',
 ]
 
 MIDDLEWARE = [

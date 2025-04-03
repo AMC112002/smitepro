@@ -65,7 +65,12 @@
                         <a class="nav-link {% if request.resolver_match.url_name == 'post_list' %}active{% endif %}" href="{% url 'forum:post_list' %}">
                             <i class="fas fa-comments me-2"></i>Foro
                         </a>
-                    </li>                                                  
+                    </li> 
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'chat' %}active{% endif %}" href="{% url 'chat:chat_rooms' %}">
+                            <i class="fas fa-comment-dots me-2"></i>Chat
+                        </a>
+                    </li>                                                 
                 </li>                
                 {% if user.is_authenticated %}
                 <li class="nav-item">

@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    body {
+        background-color: #121212;
+        color: #e0e0e0;
+    }
+
+    .create-chat-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .card {
+        background-color: #1E1E1E;
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .card-header {
+        background-color: #2C2C2C;
+        border-bottom: 1px solid #333;
+        color: #ffffff;
+        padding: 15px;
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .form-label {
+        color: #E0E0E0;
+    }
+
+    .form-control {
+        background-color: #2C2C2C;
+        border: 1px solid #444;
+        color: #E0E0E0;
+    }
+
+    .form-control:focus {
+        background-color: #2C2C2C;
+        border-color: #005C4B;
+        box-shadow: 0 0 0 0.2rem rgba(0, 92, 75, 0.25);
+        color: #E0E0E0;
+    }
+
+    .form-text {
+        color: #888;
+    }
+
+    .list-group-item {
+        background-color: #2C2C2C;
+        border: none;
+        color: #E0E0E0;
+    }
+
+    .list-group-item:hover {
+        background-color: #3C3C3C;
+    }
+
+    .form-check-input {
+        background-color: #444;
+        border-color: #666;
+    }
+
+    .form-check-input:checked {
+        background-color: #005C4B;
+        border-color: #005C4B;
+    }
+
+    .btn-primary {
+        background-color: #005C4B;
+        border: none;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #00453B;
+    }
+
+    .btn-outline-secondary {
+        background-color: transparent;
+        color: #888;
+        border-color: #444;
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: #2C2C2C;
+        color: #E0E0E0;
+    }
+
+    .alert-warning {
+        background-color: #3C2C2C;
+        color: #FFD700;
+        border: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="create-chat-container">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="mb-0">Nueva conversación</h2>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="name" class="form-label">Nombre de la conversación (opcional)</label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Ej: Equipo de torneo">
+                    <div class="form-text">Deja en blanco para conversaciones individuales</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Seleccionar usuarios</label>
+                    <div class="form-text mb-2">Selecciona al menos un usuario para chatear</div>
+                    
+                    <div class="list-group">
+                        {% for user_item in users %}
+                            <label class="list-group-item">
+                                <input class="form-check-input me-1" type="checkbox" name="users" value="{{ user_item.id }}">
+                                {{ user_item.username }}
+                            </label>
+                        {% empty %}
+                            <div class="alert alert-warning">No hay otros usuarios disponibles</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>Crear conversación
+                    </button>
+                    <a href="{% url 'chat:chat_rooms' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add validation to ensure at least one user is selected
+        const form = document.querySelector('form');
+        const checkboxes = form.querySelectorAll('input[name="users"]');
+        const submitButton = form.querySelector('button[type="submit"]');
+
+        function validateUserSelection() {
+            const selectedUsers = Array.from(checkboxes).some(cb => cb.checked);
+            submitButton.disabled = !selectedUsers;
+        }
+
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', validateUserSelection);
+        });
+
+        // Initial validation
+        validateUserSelection();
+    });
+</script>
+{% endblock %}
