@@ -407,6 +407,58 @@
         margin-right: 8px;
         color: var(--accent-primary);
     }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+        padding: 15px;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px var(--shadow-color);
+        border: 1px solid var(--border-color);
+    }
+
+    .pagination .page-item {
+        list-style: none;
+    }
+
+    .pagination .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 14px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        color: var(--text-primary);
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+    }
+
+    .pagination .page-link:hover {
+        background: var(--accent-primary);
+        color: white;
+        border-color: var(--accent-secondary);
+        box-shadow: 0 0 10px rgba(126, 87, 194, 0.5);
+        transform: translateY(-2px);
+    }
+
+    .pagination .page-item.active .page-link {
+        background: var(--accent-primary);
+        color: white;
+        border-color: var(--accent-secondary);
+        box-shadow: 0 0 15px rgba(126, 87, 194, 0.7);
+        pointer-events: none;
+    }
+
+    .pagination .page-item.disabled .page-link {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
     
     @media (max-width: 768px) {
         .filter-controls {
@@ -448,7 +500,7 @@
 <div class="card" style="margin-bottom: 20px;">
     <div class="card-body">
         <form method="GET" action="{% url 'build_list' %}">
-            <div style="display: flex; gap: 10px; align-items: center;">
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
                 <select name="god" class="btn-outline" style="flex: 1;">
                     <option value="">-- Seleccionar Dios --</option>
                     {% for god in gods %}
@@ -457,6 +509,12 @@
                         </option>
                     {% endfor %}
                 </select>
+                
+                <select name="sort" class="btn-outline" style="flex: 1;">
+                    <option value="" {% if not request.GET.sort %}selected{% endif %}>Más recientes</option>
+                    <option value="rating" {% if request.GET.sort == 'rating' %}selected{% endif %}>Mejor valoradas</option>
+                </select>
+                
                 <button type="submit" class="btn">
                     <i class="fas fa-filter"></i> Filtrar
                 </button>
@@ -481,6 +539,46 @@
                     </div>
                 </div>
                 <div class="card-body">
+                    <!-- Imagen del dios -->
+                    <div class="god-image-container" style="text-align: center; margin-bottom: 15px;">
+                        {% if build.god.image %}
+                            <img src="{{ build.god.image.url }}" alt="{{ build.god.name }}"
+                                style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--accent-primary); object-fit: cover;">
+                        {% else %}
+                            <img src="/api/placeholder/80/80" alt="{{ build.god.name }}"
+                                style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--accent-primary);">
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Valoración -->
+                    <div style="margin-bottom: 15px; text-align: center;">
+                        <div class="rating">
+                            {% with avg_rating=build.average_rating %}
+                                <div style="font-size: 1.2rem; font-weight: 600; color: var(--accent-primary);">
+                                    {% if avg_rating > 0 %}
+                                        {{ avg_rating|floatformat:1 }} / 5
+                                    {% else %}
+                                        Sin valoraciones
+                                    {% endif %}
+                                </div>
+                                <div style="display: flex; justify-content: center; margin-top: 5px;">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= avg_rating %}
+                                            <i class="fas fa-star" style="color: gold; margin: 0 2px;"></i>
+                                        {% elif forloop.counter <= avg_rating|add:"0.5" %}
+                                            <i class="fas fa-star-half-alt" style="color: gold; margin: 0 2px;"></i>
+                                        {% else %}
+                                            <i class="far fa-star" style="color: #555; margin: 0 2px;"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 3px;">
+                                    ({{ build.total_ratings }} valoracion{% if build.total_ratings != 1 %}es{% endif %})
+                                </div>
+                            {% endwith %}
+                        </div>
+                    </div>
+
                     <div>
                         <h4><i class="fas fa-star"></i> Objeto Inicial</h4>
                         <div class="item">
@@ -522,5 +620,32 @@
             {% endif %}
         </div>
     </div>
+{% endif %}
+{% if builds.has_other_pages %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if builds.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if request.GET.god %}&god={{ request.GET.god }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">« Primera</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ builds.previous_page_number }}{% if request.GET.god %}&god={{ request.GET.god }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">‹ Anterior</a>
+            </li>
+        {% endif %}
+
+        <li class="page-item disabled">
+            <span class="page-link">Página {{ builds.number }} de {{ builds.paginator.num_pages }}</span>
+        </li>
+
+        {% if builds.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ builds.next_page_number }}{% if request.GET.god %}&god={{ request.GET.god }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Siguiente ›</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ builds.paginator.num_pages }}{% if request.GET.god %}&god={{ request.GET.god }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Última »</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
 {% endif %}
 {% endblock %}

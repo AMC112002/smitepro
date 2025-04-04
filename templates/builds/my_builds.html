@@ -107,7 +107,7 @@
     .build-item {
         background: var(--bg-secondary);
         border: 1px solid var(--border-color);
-        border-radius: 6px;
+        border-radius: 8px;
         padding: 15px;
         margin-bottom: 15px;
         display: flex;
@@ -125,23 +125,29 @@
     .build-info {
         display: flex;
         align-items: center;
+        flex: 1;
     }
 
-    .god-icon {
-        width: 48px;
-        height: 48px;
+    .god-image {
+        width: 60px;
+        height: 60px;
         border-radius: 50%;
-        background: var(--bg-card);
-        display: flex;
-        align-items: center;
-        justify-content: center;
         margin-right: 15px;
         border: 2px solid var(--accent-secondary);
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(126, 87, 194, 0.4);
+        position: relative;
     }
 
-    .god-icon i {
-        color: var(--accent-primary);
-        font-size: 1.4rem;
+    .god-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .build-item:hover .god-image img {
+        transform: scale(1.1);
     }
 
     .build-details {
@@ -154,6 +160,24 @@
         margin-bottom: 5px;
         color: var(--text-primary);
     }
+    
+    .god-role {
+        font-size: 0.9rem;
+        color: var(--accent-primary);
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .god-role i {
+        margin-right: 5px;
+    }
+    
+    .god-pantheon {
+        font-size: 0.9rem;
+        color: var(--text-accent);
+        margin-bottom: 5px;
+    }
 
     .build-date {
         font-size: 0.85rem;
@@ -164,7 +188,6 @@
 
     .build-date i {
         margin-right: 5px;
-        color: var(--text-accent);
     }
 
     .build-actions {
@@ -175,9 +198,9 @@
     .action-btn {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
-        border-radius: 4px;
-        width: 36px;
-        height: 36px;
+        border-radius: 6px;
+        width: 40px;
+        height: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -188,10 +211,12 @@
     .action-btn:hover {
         background: var(--accent-primary);
         border-color: var(--accent-secondary);
+        transform: translateY(-3px);
     }
 
     .action-btn i {
         color: var(--text-secondary);
+        font-size: 1rem;
     }
 
     .action-btn:hover i {
@@ -205,25 +230,79 @@
     .edit-btn i {
         color: var(--text-accent);
     }
+    
+    .delete-btn i {
+        color: #ff5252;
+    }
 
     .empty-state {
         text-align: center;
-        padding: 30px;
+        padding: 40px;
+        background: var(--bg-secondary);
+        border-radius: 8px;
     }
 
     .empty-state i {
-        font-size: 3rem;
+        font-size: 4rem;
         color: var(--text-secondary);
         margin-bottom: 20px;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 0.6; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.1); }
+        100% { opacity: 0.6; transform: scale(1); }
     }
 
     .empty-state h3 {
-        margin-bottom: 10px;
+        margin-bottom: 15px;
     }
 
     .empty-state p {
         color: var(--text-secondary);
-        margin-bottom: 20px;
+        margin-bottom: 25px;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+        gap: 10px;
+    }
+    
+    .pagination .current-page {
+        background: var(--bg-secondary);
+        border: 1px solid var(--accent-secondary);
+        color: var(--text-primary);
+        cursor: default;
+    }
+    
+    /* Iconos para los roles */
+    .role-icon {
+        margin-right: 5px;
+        color: var(--accent-primary);
+    }
+    
+    /* Estilos según el rol */
+    .role-hunter .role-icon {
+        color: #64B5F6;
+    }
+    
+    .role-guardian .role-icon {
+        color: #81C784;
+    }
+    
+    .role-mage .role-icon {
+        color: #BA68C8;
+    }
+    
+    .role-warrior .role-icon {
+        color: #FF8A65;
+    }
+    
+    .role-assassin .role-icon {
+        color: #FFB74D;
     }
 
     @media (max-width: 768px) {
@@ -257,11 +336,32 @@
                 {% for build in builds %}
                     <li class="build-item">
                         <div class="build-info">
-                            <div class="god-icon">
-                                <i class="fas fa-user-circle"></i>
+                            <div class="god-image">
+                                {% if build.god.image %}
+                                    <img src="{{ build.god.image.url }}" alt="{{ build.god.name }}">
+                                {% endif %}
                             </div>
                             <div class="build-details">
-                                <div class="build-name">{{ build.god.name }}</div>
+                                <div class="build-name">{{ build.name }}</div>
+                                <div class="god-role {% if build.god.role == 'Hunter' %}role-hunter{% elif build.god.role == 'Guardian' %}role-guardian{% elif build.god.role == 'Mage' %}role-mage{% elif build.god.role == 'Warrior' %}role-warrior{% elif build.god.role == 'Assassin' %}role-assassin{% endif %}">
+                                    {% if build.god.role == 'Hunter' %}
+                                        <i class="fas fa-bullseye role-icon"></i>
+                                    {% elif build.god.role == 'Guardian' %}
+                                        <i class="fas fa-shield-alt role-icon"></i>
+                                    {% elif build.god.role == 'Mage' %}
+                                        <i class="fas fa-hat-wizard role-icon"></i>
+                                    {% elif build.god.role == 'Warrior' %}
+                                        <i class="fas fa-sword role-icon"></i>
+                                    {% elif build.god.role == 'Assassin' %}
+                                        <i class="fas fa-khanda role-icon"></i>
+                                    {% else %}
+                                        <i class="fas fa-gamepad role-icon"></i>
+                                    {% endif %}
+                                    {{ build.god.name }} - {{ build.god.get_role_display }}
+                                </div>
+                                <div class="god-pantheon">
+                                    <i class="fas fa-place-of-worship"></i> {{ build.god.get_pantheon_display }}
+                                </div>
                                 <div class="build-date">
                                     <i class="fas fa-clock"></i> Creado el {{ build.created_at|date:"d M Y, H:i" }}
                                 </div>
@@ -274,10 +374,28 @@
                             <a href="#" class="action-btn edit-btn" title="Editar build">
                                 <i class="fas fa-edit"></i>
                             </a>
+                            <a href="#" class="action-btn delete-btn" title="Eliminar build" onclick="return confirm('¿Estás seguro de que deseas eliminar esta build?');">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
                         </div>
                     </li>
                 {% endfor %}
             </ul>
+            <div class="pagination">
+                {% if builds.has_previous %}
+                    <a href="?page=1" class="btn"><i class="fas fa-angle-double-left"></i> Primera</a>
+                    <a href="?page={{ builds.previous_page_number }}" class="btn"><i class="fas fa-angle-left"></i> Anterior</a>
+                {% endif %}
+            
+                <span class="btn current-page">
+                    Página {{ builds.number }} de {{ builds.paginator.num_pages }}
+                </span>
+            
+                {% if builds.has_next %}
+                    <a href="?page={{ builds.next_page_number }}" class="btn">Siguiente <i class="fas fa-angle-right"></i></a>
+                    <a href="?page={{ builds.paginator.num_pages }}" class="btn">Última <i class="fas fa-angle-double-right"></i></a>
+                {% endif %}
+            </div>            
         {% else %}
             <div class="empty-state">
                 <i class="fas fa-scroll"></i>

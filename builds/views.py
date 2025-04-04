@@ -3,35 +3,103 @@ from django.shortcuts import render
 # Create your views here.
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Build
-from .forms import BuildForm
+from .models import Build, BuildRating
+from .forms import BuildForm, BuildRatingForm
 from dioses.models import God
 from objetos.models import Item, ItemCategory
+from django.db.models import Avg, Count
+from django.db.models.functions import Coalesce
+from django.db.models import Value
+from django.db.models import FloatField
+from django.core.paginator import Paginator
 
 # Mostrar las builds de la comunidad
 def build_list(request):
     god_id = request.GET.get('god')
-    builds = Build.objects.filter(is_random=False).order_by('-created_at')  # ⭐ Excluir builds randomizer
+    builds = Build.objects.filter(is_random=False).order_by('-created_at')  # Excluir builds randomizer
 
     if god_id:
         builds = builds.filter(god_id=god_id)
 
+    # Anotación para cálculo de valoración
+    from django.db.models import FloatField
+    from django.db.models.functions import Coalesce
+    from django.db.models import Value, Avg, Count
+
+    builds = builds.annotate(
+        avg_rating=Coalesce(Avg('ratings__rating'), Value(0, output_field=FloatField())),  
+        rating_count=Count('ratings')
+    )
+
+    # Ordenación
+    sort_by = request.GET.get('sort', '')
+    if sort_by == 'rating':
+        builds = builds.order_by('-avg_rating', '-rating_count', '-created_at')
+
+    # 🔹 PAGINACIÓN: 9 builds por página
+    paginator = Paginator(builds, 9)
+    page_number = request.GET.get('page')
+    builds_page = paginator.get_page(page_number)
+
     gods = God.objects.all()
 
     context = {
-        'builds': builds,
+        'builds': builds_page,  # Usar la versión paginada
         'gods': gods,
     }
     return render(request, 'builds/build_list.html', context)
 
 def build_detail(request, pk):
     build = get_object_or_404(Build, pk=pk)
-    return render(request, 'builds/build_detail.html', {'build': build})
+    user_rating = None
+    rating_form = None
+    
+    if request.user.is_authenticated:
+        # Verificar si el usuario ya ha valorado esta build
+        user_rating = BuildRating.objects.filter(build=build, user=request.user).first()
+        
+        if request.method == 'POST' and 'rating' in request.POST:
+            if user_rating:
+                # Actualizar valoración existente
+                rating_form = BuildRatingForm(request.POST, instance=user_rating)
+            else:
+                # Crear nueva valoración
+                rating_form = BuildRatingForm(request.POST)
+                
+            if rating_form.is_valid():
+                rating = rating_form.save(commit=False)
+                if not user_rating:
+                    rating.build = build
+                    rating.user = request.user
+                rating.save()
+                
+                from django.contrib import messages
+                messages.success(request, '¡Valoración guardada correctamente!')
+                return redirect('build_detail', pk=build.pk)
+        else:
+            # Mostrar formulario con valoración actual o vacío
+            rating_form = BuildRatingForm(instance=user_rating)
+    
+    # Obtener todas las valoraciones para esta build
+    ratings = build.ratings.all()
+    
+    context = {
+        'build': build, 
+        'ratings': ratings,
+        'user_rating': user_rating,
+        'rating_form': rating_form
+    }
+    return render(request, 'builds/build_detail.html', context)
 
 # Mostrar tus propias builds
 @login_required
 def my_builds(request):
-    builds = Build.objects.filter(user=request.user).order_by('-created_at')
+    builds_list = Build.objects.filter(user=request.user).order_by('-created_at')
+    paginator = Paginator(builds_list, 5)  # Cambia el número para controlar cuántas builds por página
+
+    page_number = request.GET.get('page')
+    builds = paginator.get_page(page_number)
+
     context = {'builds': builds}
     return render(request, 'builds/my_builds.html', context)
 

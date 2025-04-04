@@ -61,3 +61,36 @@ def attack_speed_percent(value):
         return min(base_value * 100 / 2, 100)  # Cap at 100%
     except (ValueError, TypeError):
         return 0
+
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key, 0)
+
+@register.filter
+def divide(value, arg):
+    try:
+        return float(value) / float(arg)
+    except (ValueError, ZeroDivisionError):
+        return 0
+
+@register.filter
+def multiply(value, arg):
+    try:
+        return float(value) * float(arg)
+    except ValueError:
+        return 0
+
+@register.filter
+def filter_by_rating(queryset, rating):
+    """Filter a queryset of ratings by the given rating value"""
+    return [item for item in queryset if item.rating == int(rating)]
+
+@register.filter
+def calculate_percentage(count, total_queryset):
+    """
+    Calculate percentage of count relative to total queryset length
+    """
+    total = len(total_queryset) if total_queryset else 0
+    if total == 0:
+        return 0
+    return (count / total) * 100

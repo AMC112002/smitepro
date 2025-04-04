@@ -15,3 +15,27 @@ class Build(models.Model):
 
     def __str__(self):
         return f"{self.god.name} - {self.user.username}"
+
+    def average_rating(self):
+        ratings = self.ratings.all()
+        if ratings:
+            return sum(r.rating for r in ratings) / len(ratings)
+        return 0
+    
+    def total_ratings(self):
+        return self.ratings.count()
+
+class BuildRating(models.Model):
+    build = models.ForeignKey(Build, on_delete=models.CASCADE, related_name='ratings')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='build_ratings')
+    rating = models.IntegerField(choices=[(1, '1 - Muy mala'), (2, '2 - Mala'), (3, '3 - Regular'), 
+                                         (4, '4 - Buena'), (5, '5 - Excelente')])
+    comment = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # Asegurar que un usuario solo pueda valorar una build una vez
+        unique_together = ('build', 'user')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.build.god.name} - {self.rating}"

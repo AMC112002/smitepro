@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{%load custom_filters %}
+
 {% block title %}Build de {{ build.god.name }} | Detalles{% endblock %}
 
 {% block content %}
@@ -16,8 +18,17 @@
         --border-color: #272b3f;
         --hover-color: #242940;
         --shadow-color: rgba(0, 0, 0, 0.5);
+        
+        /* Colores para las estrellas según valoración */
+        --star-1: #ff5252; /* Rojo para valoraciones bajas */
+        --star-2: #ff9800; /* Naranja para valoraciones medias-bajas */
+        --star-3: #ffc107; /* Amarillo para valoraciones medias */
+        --star-4: #8bc34a; /* Verde claro para valoraciones buenas */
+        --star-5: #4caf50; /* Verde para valoraciones excelentes */
+        --star-empty: #555555; /* Gris para estrellas vacías */
     }
 
+    /* El resto de estilos se mantiene igual */
     .build-header {
         display: flex;
         align-items: center;
@@ -205,6 +216,57 @@
         border-radius: 50%;
         margin-right: 10px;
     }
+
+    .chat-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+    
+    /* Animación para las estrellas */
+    @keyframes starPulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+    
+    .rating-animation .star-icon {
+        animation: starPulse 1s infinite;
+        animation-delay: calc(var(--star-index) * 0.2s);
+    }
+    /* Colores para las estrellas según la valoración */
+    :root {
+        --star-1: #cd7f32;  /* Bronze */
+        --star-2: #c0c0c0;  /* Silver */
+        --star-3: #ffd700;  /* Gold */
+        --star-4: #00bfff;  /* Light Blue */
+        --star-5: #ff4500;  /* Orange Red */
+    }
+
+    /* Estilo base de las estrellas */
+    .star-icon {
+        font-size: 20px; /* Tamaño de la estrella */
+        transition: color 0.3s ease-in-out;
+    }
+
+    /* Estrellas vacías (no valoradas) */
+    .star-empty {
+        color: #ccc;
+    }
+
+    /* Estrellas llenas (valoradas) */
+    .star-rated-1 { color: var(--star-1); }
+    .star-rated-2 { color: var(--star-2); }
+    .star-rated-3 { color: var(--star-3); }
+    .star-rated-4 { color: var(--star-4); }
+    .star-rated-5 { color: var(--star-5); }
+
+    /* Media estrella */
+    .fa-star-half-alt {
+        color: var(--star-3); /* Puedes cambiarlo para que coincida con la media */
+    }
+
 </style>
 
 <div class="build-header">
@@ -305,6 +367,146 @@
     </div>
 </div>
 
+<!-- Sección para valoraciones movida después de la build -->
+<div class="card" style="margin-top: 30px; border-radius: 10px; overflow: hidden; box-shadow: 0 6px 15px var(--shadow-color);">
+    <div class="card-header" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); padding: 15px 20px;">
+        <h3 style="color: var(--text-primary); margin: 0; display: flex; align-items: center;">
+            <i class="fas fa-star" style="margin-right: 10px; color: gold;"></i> Valoraciones
+        </h3>
+    </div>
+    <div class="card-body" style="background: var(--bg-card); padding: 20px;">
+        {% if user.is_authenticated %}
+            {% if user != build.user %}
+                <div class="rating-form" style="background: var(--bg-secondary); border-radius: 8px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border-color);">
+                    <h4 style="margin-top: 0; margin-bottom: 15px; color: var(--text-primary);">Tu valoración</h4>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div class="star-rating-container" style="font-size: 1.5rem;">
+                                {{ rating_form.rating }}
+                                <!-- JavaScript para colorear estrellas en el formulario -->
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        const ratingInputs = document.querySelectorAll('input[name="rating"]');
+                                        const starIcons = document.querySelectorAll('.star-rating-container .star-icon');
+                                        
+                                        // Colorear según la valoración actual (si existe)
+                                        const currentRating = {{ user_rating.rating|default:0 }};
+                                        if (currentRating > 0) {
+                                            updateStars(currentRating);
+                                        }
+                                        
+                                        // Actualizar estrellas al cambiar la valoración
+                                        ratingInputs.forEach(function(input) {
+                                            input.addEventListener('change', function() {
+                                                updateStars(this.value);
+                                            });
+                                        });
+                                        
+                                        function updateStars(rating) {
+                                            starIcons.forEach(function(star, index) {
+                                                if (index < rating) {
+                                                    star.className = 'star-icon fas fa-star star-rated-' + rating;
+                                                    star.style.setProperty('--star-index', index);
+                                                } else {
+                                                    star.className = 'star-icon far fa-star star-empty';
+                                                }
+                                            });
+                                        }
+                                    });
+                                </script>
+                            </div>
+                            <button type="submit" class="btn" style="background: var(--accent-primary); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
+                                {% if user_rating %}
+                                    <i class="fas fa-edit"></i> Actualizar
+                                {% else %}
+                                    <i class="fas fa-star"></i> Valorar
+                                {% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            {% else %}
+                <div style="background: var(--bg-secondary); border-radius: 8px; padding: 15px; margin-bottom: 20px; border: 1px solid var(--border-color);">
+                    <p style="margin: 0; color: var(--text-secondary);">No puedes valorar tu propia build.</p>
+                </div>
+            {% endif %}
+        {% else %}
+            <div style="background: var(--bg-secondary); border-radius: 8px; padding: 15px; margin-bottom: 20px; border: 1px solid var(--border-color);">
+                <p style="margin: 0; color: var(--text-secondary);">Debes <a href="/accounts/login/?next={{ request.path }}" style="color: var(--accent-primary);">iniciar sesión</a> para valorar esta build.</p>
+            </div>
+        {% endif %}
+        
+        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+            <h4 style="margin: 0; color: var(--text-primary);">Valoración de la comunidad</h4>
+            <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+                {% if average_rating and ratings|length > 0 %}
+                    <div class="star-rating">
+                        {% with rating_int=average_rating|floatformat:0|add:0 %}
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= rating_int %}
+                                <i class="star-icon fas fa-star star-rated-{{ rating_int }}" style="--star-index: {{ forloop.counter0 }}; color: var(--star-{{ rating_int }});"></i>
+                            {% elif forloop.counter <= average_rating|add:0.5|floatformat:0|add:0 %}
+                                <i class="star-icon fas fa-star-half-alt" style="--star-index: {{ forloop.counter0 }}; color: var(--star-{{ rating_int }});"></i>
+                            {% else %}
+                                <i class="star-icon far fa-star star-empty" style="--star-index: {{ forloop.counter0 }};"></i>
+                            {% endif %}
+                        {% endfor %}
+                        {% endwith %}
+                        <span style="color: var(--text-primary); font-weight: 600; margin-left: 5px;">{{ average_rating|floatformat:1 }}</span>
+                    </div>
+                {% else %}
+                    <span style="color: var(--text-secondary);"></span>
+                {% endif %}
+                
+                {% if ratings|length > 0 %}
+                    <span style="color: var(--text-secondary); font-size: 0.9rem;">({{ ratings|length }} valoracion{% if ratings|length != 1 %}es{% endif %})</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Estadísticas de valoración con estrellas coloreadas -->
+        <div class="rating-summary" style="background: var(--bg-secondary); border-radius: 8px; padding: 20px; border: 1px solid var(--border-color); display: flex; justify-content: center; align-items: center; flex-direction: column;">
+            {% if ratings|length > 0 %}
+                <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+                    <div style="font-size: 2.5rem; font-weight: bold; color: var(--text-primary);">{{ average_rating|floatformat:1 }}</div>
+                    <div style="display: flex; flex-direction: column; margin-left: 15px;">                                                               
+                        <div style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 5px;">
+                            Basado en {{ ratings|length }} valoracion{% if ratings|length != 1 %}es{% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Distribución de valoraciones -->
+                <div style="width: 100%; max-width: 400px; margin-top: 15px;">
+                    {% for i in "54321" %}
+                        {% with i_int=i|add:"0" %}
+                        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                            <div style="width: 60px; display: flex; align-items: center;">
+                                <span style="margin-right: 5px; color: white;">{{ i }}</span> <!-- Establecer color blanco aquí -->
+                                <i class="fas fa-star star-rated-{{ i }}" style="color: var(--star-{{ i }});"></i>
+                            </div>
+                            <div style="flex-grow: 1; height: 8px; background: var(--bg-primary); border-radius: 4px; overflow: hidden; margin: 0 10px;">
+                                {% with count=ratings|filter_by_rating:i_int|length %}
+                                {% with percentage=count|calculate_percentage:ratings %}
+                                <div style="width: {{ percentage }}%; height: 100%; background: var(--star-{{ i }}); border-radius: 4px;"></div>
+                                {% endwith %}
+                                {% endwith %}
+                            </div>
+                            <div style="width: 40px; text-align: right; color: var(--text-secondary);">
+                                {{ ratings|filter_by_rating:i_int|length }}
+                            </div>
+                        </div>
+                        {% endwith %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="color: var(--text-secondary); text-align: center;">Aún no hay valoraciones para esta build.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
 {% if build.user == user %}
 <div class="edit-delete">
     <a href="#" class="btn btn-edit">
@@ -315,4 +517,16 @@
     </a>
 </div>
 {% endif %}
+
+<!-- Script para animar las estrellas -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Deshabilitar la animación después de 3 segundos para no distraer
+        setTimeout(function() {
+            document.querySelectorAll('.rating-animation').forEach(function(element) {
+                element.classList.remove('rating-animation');
+            });
+        }, 3000);
+    });
+</script>
 {% endblock %}

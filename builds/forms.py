@@ -1,5 +1,5 @@
 from django import forms
-from .models import Build
+from .models import Build, BuildRating
 from objetos.models import Item
 from dioses.models import God
 
@@ -67,3 +67,12 @@ class BuildForm(forms.ModelForm):
             raise forms.ValidationError('Debes seleccionar exactamente 2 reliquias.')
 
         return relics
+
+class BuildRatingForm(forms.ModelForm):
+    class Meta:
+        model = BuildRating
+        fields = ['rating', 'comment']
+        widgets = {
+            'rating': forms.Select(attrs={'class': 'form-control'}),
+            'comment': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'})
+        }
