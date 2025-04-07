@@ -1,0 +1,838 @@
+{% extends 'base.html' %}
+
+{% load custom_filters %}
+
+{% block content %}
+  <div class="tierlist-container">
+    <h1 class="tierlist-title">Editar Tier List</h1>
+    
+    <form method="post" id="tierlist-form">
+      {% csrf_token %}
+      
+      <!-- Nombre y descripción de la tierlist -->
+      <div class="form-card">
+        <div class="form-group">
+          {{ form.name.label_tag }}
+          {{ form.name }}
+        </div>
+        <div class="form-group">
+          {{ form.description.label_tag }}
+          {{ form.description }}
+        </div>
+        <div class="form-group form-checkbox">
+          {{ form.is_public }}
+          {{ form.is_public.label_tag }}
+        </div>
+      </div>
+      
+      <div class="tierlist-section">
+        <h2>Organiza los dioses en tiers</h2>
+        
+        <!-- Tabla de Tiers -->
+        <div id="tierlist-container" class="tierlist-table">
+          <table class="tier-table">
+            <tbody>
+              <!-- S Tier - Rojo -->
+              <tr class="tier-row">
+                <td class="tier-label s-tier">S</td>
+                <td id="tier-S" class="tier-content" data-tier="S"></td>
+              </tr>
+              
+              <!-- A Tier - Naranja -->
+              <tr class="tier-row">
+                <td class="tier-label a-tier">A</td>
+                <td id="tier-A" class="tier-content" data-tier="A"></td>
+              </tr>
+              
+              <!-- B Tier - Amarillo -->
+              <tr class="tier-row">
+                <td class="tier-label b-tier">B</td>
+                <td id="tier-B" class="tier-content" data-tier="B"></td>
+              </tr>
+              
+              <!-- C Tier - Verde -->
+              <tr class="tier-row">
+                <td class="tier-label c-tier">C</td>
+                <td id="tier-C" class="tier-content" data-tier="C"></td>
+              </tr>
+              
+              <!-- D Tier - Azul -->
+              <tr class="tier-row">
+                <td class="tier-label d-tier">D</td>
+                <td id="tier-D" class="tier-content" data-tier="D"></td>
+              </tr>
+              
+              <!-- F Tier - Rosa -->
+              <tr class="tier-row">
+                <td class="tier-label f-tier">F</td>
+                <td id="tier-F" class="tier-content" data-tier="F"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="gods-section">
+          <h3>Dioses Disponibles</h3>
+          <div class="search-box">
+            <input type="text" id="god-search" placeholder="Buscar dios...">
+            <i class="fas fa-search search-icon"></i>
+          </div>
+          <div id="available-gods">
+            {% for god in gods %}
+              <div class="god-item" id="god-{{ god.id }}" data-god-id="{{ god.id }}" data-god-name="{{ god.name }}">
+                {% if god.image %}
+                  <img src="{{ god.image.url }}" alt="{{ god.name }}" class="god-image">
+                {% else %}
+                  <div class="god-image-placeholder">{{ god.name|first }}</div>
+                {% endif %}
+                <span class="god-name">{{ god.name }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        
+        <div class="form-submit">
+          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+          <a href="{{ tierlist.get_absolute_url }}" class="btn btn-secondary">Cancelar</a>
+        </div>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Modal para seleccionar tier -->
+  <div id="tier-select-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h3 id="modal-title">Seleccionar tier para <span id="selected-god-name"></span></h3>
+      <div class="tier-buttons">
+        <button class="tier-btn s-tier" data-tier="S">S</button>
+        <button class="tier-btn a-tier" data-tier="A">A</button>
+        <button class="tier-btn b-tier" data-tier="B">B</button>
+        <button class="tier-btn c-tier" data-tier="C">C</button>
+        <button class="tier-btn d-tier" data-tier="D">D</button>
+        <button class="tier-btn f-tier" data-tier="F">F</button>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    // Objeto para mantener un registro de los dioses y sus tiers asignados
+    const godAssignments = {};
+    let selectedGod = null;
+    
+    // Cargar asignaciones existentes
+    const currentAssignments = {{ current_assignments|safe }};
+    
+    // Elementos del DOM
+    const modal = document.getElementById('tier-select-modal');
+    const modalTitle = document.getElementById('selected-god-name');
+    const closeModalBtn = document.querySelector('.close-modal');
+    const tierButtons = document.querySelectorAll('.tier-btn');
+    const godItems = document.querySelectorAll('.god-item');
+    const searchInput = document.getElementById('god-search');
+    
+    // Inicializar las asignaciones con los datos existentes
+    document.addEventListener('DOMContentLoaded', function() {
+      for (const [godId, tierName] of Object.entries(currentAssignments)) {
+        const godItem = document.querySelector(`#god-${godId}`);
+        if (godItem) {
+          const godName = godItem.getAttribute('data-god-name');
+          assignGodToTier(godId, godName, tierName);
+        }
+      }
+    });
+    
+    // Función para mostrar el modal
+    function showTierModal(godId, godName) {
+      selectedGod = {
+        id: godId,
+        name: godName
+      };
+      
+      modalTitle.textContent = godName;
+      modal.style.display = 'block';
+    }
+    
+    // Función para cerrar el modal
+    function closeModal() {
+      modal.style.display = 'none';
+      selectedGod = null;
+    }
+    
+    // Event listener para cerrar el modal con el botón de cerrar
+    closeModalBtn.addEventListener('click', closeModal);
+    
+    // Event listener para cerrar el modal al hacer clic fuera de él
+    window.addEventListener('click', function(event) {
+      if (event.target === modal) {
+        closeModal();
+      }
+    });
+    
+    // Event listener para los botones de tier
+    tierButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        if (selectedGod) {
+          const tierName = this.getAttribute('data-tier');
+          assignGodToTier(selectedGod.id, selectedGod.name, tierName);
+          closeModal();
+        }
+      });
+    });
+    
+    // Event listener para los dioses disponibles
+    godItems.forEach(godItem => {
+      godItem.addEventListener('click', function() {
+        const godId = this.getAttribute('data-god-id');
+        const godName = this.getAttribute('data-god-name');
+        showTierModal(godId, godName);
+      });
+    });
+    
+    // Función para asignar un dios a un tier
+    function assignGodToTier(godId, godName, tierName) {
+      // Comprueba si este dios ya está en otro tier y elimínalo
+      if (godAssignments[godId]) {
+        const existingAssignment = document.getElementById(`god-${godId}-in-tier`);
+        if (existingAssignment) {
+          existingAssignment.remove();
+        }
+      }
+      
+      // Actualiza el registro de asignaciones
+      godAssignments[godId] = tierName;
+      
+      // Obtener el elemento original del dios
+      const godElement = document.getElementById(`god-${godId}`);
+      
+      // Crear el elemento para el tier
+      const godInTier = document.createElement('div');
+      godInTier.id = `god-${godId}-in-tier`;
+      godInTier.className = 'god-item god-in-tier';
+      godInTier.setAttribute('data-god-id', godId);
+      
+      // Copiar la imagen o placeholder
+      if (godElement.querySelector('.god-image')) {
+        const img = document.createElement('img');
+        img.src = godElement.querySelector('.god-image').src;
+        img.alt = godName;
+        img.className = 'god-image';
+        godInTier.appendChild(img);
+      } else {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'god-image-placeholder';
+        placeholder.textContent = godName.charAt(0);
+        godInTier.appendChild(placeholder);
+      }
+      
+      // Añadir el nombre
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'god-name';
+      nameSpan.textContent = godName;
+      godInTier.appendChild(nameSpan);
+      
+      // Añadir botón para eliminar
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'remove-god';
+      removeBtn.innerHTML = '&times;';
+      removeBtn.onclick = function(e) {
+        e.stopPropagation(); // Evitar propagación del evento
+        
+        // Eliminar el dios del tier
+        godInTier.remove();
+        
+        // Eliminar la asignación
+        delete godAssignments[godId];
+        
+        // Eliminar el input oculto
+        const input = document.querySelector(`input[name="god_tier_${godId}"]`);
+        if (input) {
+          input.remove();
+        }
+        
+        // Mostrar de nuevo el dios en la lista de disponibles
+        godElement.style.display = 'flex';
+      };
+      
+      godInTier.appendChild(removeBtn);
+      
+      // Añadir el dios al tier correspondiente
+      document.getElementById(`tier-${tierName}`).appendChild(godInTier);
+      
+      // Crear o actualizar el input oculto para enviar la información
+      let input = document.querySelector(`input[name="god_tier_${godId}"]`);
+      if (!input) {
+        input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = `god_tier_${godId}`;
+        document.getElementById('tierlist-form').appendChild(input);
+      }
+      input.value = tierName;
+      
+      // Ocultar el dios de la lista de disponibles
+      godElement.style.display = 'none';
+    }
+    
+    // Funcionalidad de búsqueda
+    searchInput.addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase();
+      
+      godItems.forEach(godItem => {
+        // Solo buscar entre los que no están ya asignados
+        if (!godAssignments[godItem.getAttribute('data-god-id')]) {
+          const godName = godItem.getAttribute('data-god-name').toLowerCase();
+          
+          if (godName.includes(searchTerm)) {
+            godItem.style.display = 'flex';
+          } else {
+            godItem.style.display = 'none';
+          }
+        }
+      });
+    });
+    
+    // Preparar el formulario antes de enviar
+    document.getElementById('tierlist-form').addEventListener('submit', function(e) {
+      // Asegurarnos de que todas las asignaciones estén registradas como inputs ocultos
+      for (const [godId, tierName] of Object.entries(godAssignments)) {
+        let input = document.querySelector(`input[name="god_tier_${godId}"]`);
+        if (!input) {
+          input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = `god_tier_${godId}`;
+          input.value = tierName;
+          this.appendChild(input);
+        }
+      }
+    });
+  </script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Base Styles with Modern Color Scheme */
+  :root {
+    --background: #121212;
+    --surface: #1e1e1e;
+    --surface-light: #2a2a2a;
+    --primary: #bb86fc;
+    --primary-dark: #9d4edd;
+    --text-primary: #e1e1e1;
+    --text-secondary: #b0b0b0;
+    --border: #333333;
+    
+    /* Tier Colors - More vibrant with better contrast */
+    --s-tier: #ff4655;
+    --a-tier: #ff8c41;
+    --b-tier: #ffdc5e;
+    --c-tier: #4ade80;
+    --d-tier: #38bdf8;
+    --f-tier: #f472b6;
+  }
+
+  /* General Layout Improvements */
+  .tierlist-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px;
+    font-family: 'Poppins', 'Segoe UI', sans-serif;
+    color: var(--text-primary);
+  }
+
+  .tierlist-title {
+    color: var(--primary);
+    text-align: center;
+    margin-bottom: 35px;
+    font-size: 36px;
+    font-weight: 700;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--primary);
+    text-shadow: 0 0 10px rgba(187, 134, 252, 0.3);
+  }
+
+  /* Form Card Styles */
+  .form-card {
+    background-color: var(--surface);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border);
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 16px;
+  }
+
+  .form-group input[type="text"],
+  .form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background-color: var(--surface-light);
+    color: var(--text-primary);
+    font-size: 16px;
+    transition: all 0.3s ease;
+  }
+
+  .form-group input[type="text"]:focus,
+  .form-group textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(187, 134, 252, 0.25);
+    outline: none;
+  }
+
+  .form-checkbox {
+    display: flex;
+    align-items: center;
+  }
+
+  .form-checkbox input[type="checkbox"] {
+    margin-right: 10px;
+    accent-color: var(--primary);
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Section Headers */
+  .tierlist-section h2,
+  .gods-section h3 {
+    color: var(--text-primary);
+    margin: 25px 0 15px;
+    font-size: 24px;
+    font-weight: 600;
+    border-left: 4px solid var(--primary);
+    padding-left: 12px;
+  }
+
+  .gods-section h3 {
+    font-size: 20px;
+  }
+
+  /* Tier Table Improvements */
+  .tierlist-table {
+    margin: 25px 0;
+    width: 100%;
+    border: none;
+    background-color: var(--surface);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  }
+
+  .tier-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .tier-row {
+    transition: background-color 0.2s;
+  }
+
+  .tier-row:hover .tier-content {
+    background-color: var(--surface-light);
+  }
+
+  .tier-label {
+    width: 70px;
+    height: 80px;
+    font-size: 32px;
+    font-weight: 800;
+    text-align: center;
+    vertical-align: middle;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    color: rgba(0, 0, 0, 0.7);
+  }
+
+  /* Enhanced Tier Colors */
+  .s-tier { background-color: var(--s-tier); }
+  .a-tier { background-color: var(--a-tier); }
+  .b-tier { background-color: var(--b-tier); }
+  .c-tier { background-color: var(--c-tier); }
+  .d-tier { background-color: var(--d-tier); }
+  .f-tier { background-color: var(--f-tier); }
+
+  .tier-content {
+    padding: 15px;
+    min-height: 80px;
+    background-color: var(--surface);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s ease;
+    border-left: 1px solid var(--border);
+  }
+
+  /* Gods Section Improvements */
+  .gods-section {
+    margin-top: 40px;
+  }
+
+  .search-box {
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 14px 20px;
+    padding-right: 45px;
+    border: none;
+    border-radius: 10px;
+    background-color: var(--surface);
+    color: var(--text-primary);
+    font-size: 16px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .search-box input:focus {
+    box-shadow: 0 4px 12px rgba(187, 134, 252, 0.25);
+    outline: none;
+    background-color: var(--surface-light);
+  }
+
+  .search-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--primary);
+    font-size: 18px;
+  }
+
+  #available-gods {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+    padding: 20px;
+    background-color: var(--surface);
+    border-radius: 12px;
+    max-height: 350px;
+    overflow-y: auto;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) var(--surface-light);
+  }
+
+  #available-gods::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  #available-gods::-webkit-scrollbar-track {
+    background: var(--surface-light);
+    border-radius: 10px;
+  }
+
+  #available-gods::-webkit-scrollbar-thumb {
+    background-color: var(--primary);
+    border-radius: 10px;
+  }
+
+  /* God Item Styling */
+  .god-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 90px;
+    height: 110px;
+    border: 1px solid var(--border);
+    padding: 12px 8px;
+    cursor: pointer;
+    background-color: var(--surface-light);
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .god-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
+    border-color: var(--primary);
+  }
+
+  .god-in-tier {
+    width: 80px;
+    height: 100px;
+    margin: 5px;
+    background-color: var(--surface-light);
+    border: 1px solid var(--border);
+  }
+
+  .god-image, .god-image-placeholder {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary);
+    background-color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .god-image {
+    object-position: top;
+  }
+
+  .god-name {
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    margin-top: 8px;
+    color: var(--text-primary);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+  }
+
+  .remove-god {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    background-color: var(--s-tier);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+  }
+
+  .remove-god:hover {
+    background-color: #e00;
+    transform: scale(1.1);
+  }
+
+  /* Button Styles */
+  .btn-primary, .btn-secondary {
+    background-color: var(--primary);
+    color: #121212;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: inline-block;
+    text-align: center;
+    margin: 20px 10px 0 0;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .btn-secondary {
+    background-color: var(--surface-light);
+    color: var(--text-primary);
+  }
+  
+  .btn-secondary:hover {
+    background-color: var(--surface);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .form-submit {
+    margin-top: 40px;
+    text-align: center;
+  }
+
+  /* Modal Styling */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    overflow: auto;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-content {
+    background-color: var(--surface);
+    margin: 15% auto;
+    padding: 25px;
+    border-radius: 12px;
+    width: 80%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: modalFadeIn 0.3s;
+    border: 1px solid var(--border);
+  }
+
+  @keyframes modalFadeIn {
+    from {opacity: 0; transform: translateY(-50px);}
+    to {opacity: 1; transform: translateY(0);}
+  }
+
+  .close-modal {
+    color: var(--text-secondary);
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .close-modal:hover {
+    color: var(--primary);
+  }
+
+  #modal-title {
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 22px;
+  }
+
+  .tier-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 30px;
+  }
+
+  .tier-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    border: none;
+    font-size: 26px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: rgba(0, 0, 0, 0.7);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .tier-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .tierlist-container {
+      padding: 15px;
+    }
+    
+    .tier-label {
+      width: 50px;
+      height: 70px;
+      font-size: 24px;
+    }
+    
+    .god-item {
+      width: 75px;
+      height: 95px;
+    }
+    
+    .god-in-tier {
+      width: 65px;
+      height: 85px;
+    }
+    
+    .god-image, .god-image-placeholder {
+      width: 35px;
+      height: 35px;
+      font-size: 14px;
+    }
+    
+    .btn-primary, .btn-secondary {
+      padding: 10px 20px;
+      font-size: 14px;
+      width: 100%;
+      margin: 10px 0;
+    }
+    
+    .tier-buttons {
+      gap: 10px;
+    }
+    
+    .tier-btn {
+      width: 50px;
+      height: 50px;
+      font-size: 22px;
+    }
+    
+    #available-gods {
+      grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .tierlist-title {
+      font-size: 28px;
+    }
+    
+    .tier-label {
+      width: 40px;
+      font-size: 20px;
+    }
+    
+    .god-item {
+      width: 65px;
+      height: 85px;
+    }
+    
+    .god-in-tier {
+      width: 55px;
+      height: 75px;
+    }
+    
+    .god-image, .god-image-placeholder {
+      width: 30px;
+      height: 30px;
+      font-size: 12px;
+    }
+    
+    .god-name {
+      font-size: 10px;
+    }
+    
+    #available-gods {
+      grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+      gap: 10px;
+    }
+  }
+</style>
+{% endblock %}

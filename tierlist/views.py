@@ -6,6 +6,8 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
+from django.http import HttpResponseForbidden
+from django.shortcuts import get_object_or_404
 
 # Vista para las tierlists de la comunidad
 def community_tierlists(request):
@@ -132,3 +134,87 @@ def tierlist_detail(request, pk):
     }
     
     return render(request, 'tierlist/tierlist_detail.html', context)
+
+@login_required
+def edit_tierlist(request, pk):
+    tierlist = get_object_or_404(TierList, pk=pk)
+    
+    # Verificar que el usuario sea el propietario
+    if request.user != tierlist.user:
+        return HttpResponseForbidden("No tienes permiso para editar esta Tier List.")
+    
+    # Obtener los tiers actuales
+    existing_tiers = Tier.objects.filter(tierlist=tierlist).select_related('god')
+    
+    if request.method == 'POST':
+        form = TierListForm(request.POST, instance=tierlist)
+        if form.is_valid():
+            form.save()
+            
+            # Eliminar todos los tiers existentes
+            Tier.objects.filter(tierlist=tierlist).delete()
+            
+            # Procesar los dioses en los tiers
+            for key, value in request.POST.items():
+                if key.startswith('god_tier_'):
+                    try:
+                        god_id = key.replace('god_tier_', '')
+                        tier_name = value
+                        god = God.objects.get(id=god_id)
+                        
+                        # Crear la relación Tier
+                        Tier.objects.create(
+                            tierlist=tierlist,
+                            tier=tier_name,
+                            god=god
+                        )
+                    except (God.DoesNotExist, ValueError) as e:
+                        print(f"Error procesando dios {god_id} para tier {tier_name}: {e}")
+            
+            messages.success(request, 'Tu Tier List ha sido actualizada con éxito.')
+            return redirect(tierlist.get_absolute_url())
+    else:
+        form = TierListForm(instance=tierlist)
+    
+    # Crear un diccionario de asignaciones actuales (god_id: tier)
+    current_assignments = {str(tier.god.id): tier.tier for tier in existing_tiers}
+    
+    # Obtener todos los dioses
+    gods = God.objects.all().order_by('name')
+    
+    return render(
+        request,
+        'tierlist/edit_tierlist.html',
+        {
+            'form': form,
+            'tierlist': tierlist,
+            'gods': gods,
+            'current_assignments': current_assignments,
+            'title': 'Editar Tier List'
+        }
+    )
+
+# Vista para eliminar una tierlist
+@login_required
+def delete_tierlist(request, pk):
+    tierlist = get_object_or_404(TierList, pk=pk)
+    
+    # Verificar que el usuario sea el propietario
+    if request.user != tierlist.user:
+        return HttpResponseForbidden("No tienes permiso para eliminar esta Tier List.")
+    
+    if request.method == 'POST':
+        # Eliminar la tierlist
+        tierlist_name = tierlist.name
+        tierlist.delete()
+        messages.success(request, f'Tu Tier List "{tierlist_name}" ha sido eliminada.')
+        return redirect('my_tierlists')
+    
+    return render(
+        request,
+        'tierlist/delete_tierlist.html',
+        {
+            'tierlist': tierlist,
+            'title': 'Eliminar Tier List'
+        }
+    )

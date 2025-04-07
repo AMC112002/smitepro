@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="delete-container">
+    <div class="delete-card">
+      <h1 class="delete-title">Eliminar Tier List</h1>
+      
+      <div class="delete-content">
+        <div class="warning-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        
+        <p class="delete-warning">¿Estás seguro de que deseas eliminar la tier list "<span class="tierlist-name">{{ tierlist.name }}</span>"?</p>
+        
+        <p class="delete-info">Esta acción no se puede deshacer. Se eliminarán todos los datos asociados a esta tier list.</p>
+        
+        {% if tierlist.image %}
+          <div class="tierlist-preview">
+            <img src="{{ tierlist.image.url }}" alt="{{ tierlist.name }}" class="tierlist-image">
+          </div>
+        {% endif %}
+        
+        <form method="post">
+          {% csrf_token %}
+          <div class="delete-actions">
+            <button type="submit" class="btn btn-danger">Eliminar</button>
+            <a href="{% url 'tierlist_detail' tierlist.id %}" class="btn btn-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Delete Page Styles */
+  :root {
+    --background: #121212;
+    --surface: #1e1e1e;
+    --surface-light: #2a2a2a;
+    --primary: #bb86fc;
+    --primary-dark: #9d4edd;
+    --danger: #ff4655;
+    --danger-dark: #e02d3c;
+    --text-primary: #e1e1e1;
+    --text-secondary: #b0b0b0;
+    --border: #333333;
+  }
+
+  .delete-container {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 20px;
+    font-family: 'Poppins', 'Segoe UI', sans-serif;
+    color: var(--text-primary);
+  }
+
+  .delete-card {
+    background-color: var(--surface);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border);
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .delete-title {
+    color: var(--danger);
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 28px;
+    font-weight: 700;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--danger);
+    text-shadow: 0 0 10px rgba(255, 70, 85, 0.3);
+  }
+
+  .delete-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .warning-icon {
+    font-size: 48px;
+    color: var(--danger);
+    margin-bottom: 20px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+
+  .delete-warning {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    line-height: 1.4;
+  }
+
+  .tierlist-name {
+    color: var(--primary);
+    font-weight: 700;
+  }
+
+  .delete-info {
+    color: var(--text-secondary);
+    margin-bottom: 25px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .tierlist-preview {
+    width: 100%;
+    max-width: 300px;
+    margin: 20px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .tierlist-image {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .delete-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+    width: 100%;
+  }
+
+  .btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border: none;
+    min-width: 120px;
+    text-align: center;
+  }
+
+  .btn-danger {
+    background-color: var(--danger);
+    color: white;
+  }
+
+  .btn-danger:hover {
+    background-color: var(--danger-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(255, 70, 85, 0.4);
+  }
+
+  .btn-secondary {
+    background-color: var(--surface-light);
+    color: var(--text-primary);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--surface);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .delete-container {
+      padding: 15px;
+      margin: 30px auto;
+    }
+    
+    .delete-card {
+      padding: 20px;
+    }
+    
+    .delete-title {
+      font-size: 24px;
+    }
+    
+    .warning-icon {
+      font-size: 38px;
+    }
+    
+    .delete-warning {
+      font-size: 16px;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      font-size: 14px;
+      min-width: 100px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .delete-title {
+      font-size: 22px;
+    }
+    
+    .delete-warning {
+      font-size: 14px;
+    }
+    
+    .delete-info {
+      font-size: 12px;
+    }
+    
+    .delete-actions {
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+    
+    .btn {
+      width: 100%;
+    }
+  }
+</style>
+{% endblock %}

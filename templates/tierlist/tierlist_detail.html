@@ -37,8 +37,8 @@
   <div class="tierlist-actions">
     {% if user.is_authenticated and user == tierlist.user %}
         <a href="{% url 'my_tierlists' %}" class="btn btn-secondary">Volver</a>
-        <a href="#" class="btn btn-primary">Editar</a>
-        <a href="#" class="btn btn-danger">Eliminar</a>
+        <a href="{% url 'edit_tierlist' tierlist.id %}" class="btn btn-primary">Editar</a>
+        <a href="{% url 'delete_tierlist' tierlist.id %}" class="btn btn-danger">Eliminar</a>
     {% else %}
         <a href="{% url 'community_tierlists' %}" class="btn btn-secondary">Volver</a>
     {% endif %}
