@@ -371,10 +371,10 @@
                             <a href="{% url 'build_detail' build.pk %}" class="action-btn view-btn" title="Ver detalles">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="#" class="action-btn edit-btn" title="Editar build">
+                            <a href="{% url 'edit_build' build.pk %}" class="action-btn edit-btn" title="Editar build">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <a href="#" class="action-btn delete-btn" title="Eliminar build" onclick="return confirm('¿Estás seguro de que deseas eliminar esta build?');">
+                            <a href="{% url 'delete_build' build.pk %}" class="action-btn delete-btn" title="Eliminar build">
                                 <i class="fas fa-trash-alt"></i>
                             </a>
                         </div>

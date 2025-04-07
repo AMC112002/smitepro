@@ -1,0 +1,510 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Build de {{ build.god.name }}{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --bg-primary: #0f1119;
+        --bg-secondary: #171a29;
+        --bg-card: #1e2132;
+        --accent-primary: #7e57c2;
+        --accent-secondary: #5c3d99;
+        --text-primary: #ffffff;
+        --text-secondary: #c0c0d6;
+        --text-accent: #ff8a65;
+        --border-color: #272b3f;
+        --hover-color: #242940;
+        --shadow-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .page-header {
+        background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px var(--shadow-color);
+        border: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .god-selection {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px var(--shadow-color);
+    }
+    
+    .god-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    
+    .god-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .god-card:hover, .god-card.selected {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px var(--shadow-color);
+        border-color: var(--accent-primary);
+    }
+    
+    .god-card.selected {
+        background: var(--accent-secondary);
+    }
+    
+    .god-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        margin-bottom: 10px;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    
+    .god-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .god-name {
+        font-weight: 600;
+        text-align: center;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+    }
+    
+    .section-title {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        font-size: 1.3rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-primary);
+        border-bottom: 2px solid var(--accent-primary);
+        padding-bottom: 10px;
+    }
+    
+    .section-title i {
+        color: var(--accent-primary);
+        margin-right: 10px;
+    }
+    
+    .items-section {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px var(--shadow-color);
+    }
+    
+    .items-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    
+    .item-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .item-card:hover, .item-card.selected {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px var(--shadow-color);
+        border-color: var(--accent-primary);
+    }
+    
+    .item-card.selected {
+        background: var(--accent-secondary);
+    }
+    
+    .item-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border-color);
+    }
+    
+    .item-name {
+        font-weight: 600;
+        text-align: center;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+    }
+    
+    .item-stats {
+        font-size: 0.8em;
+        color: var(--text-secondary);
+        text-align: center;
+        margin-top: 5px;
+    }
+    
+    .description-section {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px var(--shadow-color);
+    }
+    
+    .description-textarea {
+        width: 100%;
+        min-height: 120px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 10px;
+        color: var(--text-primary);
+        resize: vertical;
+    }
+    
+    .description-textarea:focus {
+        border-color: var(--accent-primary);
+        outline: none;
+    }
+    
+    .submit-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+    }
+    
+    .btn-save {
+        background: var(--accent-primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 25px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-save:hover {
+        background: var(--accent-secondary);
+        transform: translateY(-2px);
+    }
+    
+    .btn-cancel {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 12px 25px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-cancel:hover {
+        background: var(--hover-color);
+        transform: translateY(-2px);
+    }
+    
+    .selected-item-counter {
+        color: var(--text-secondary);
+        margin-top: 5px;
+        font-size: 0.9rem;
+        text-align: right;
+    }
+    
+    .filter-search {
+        position: relative;
+        margin-bottom: 15px;
+    }
+    
+    .filter-search input {
+        width: 100%;
+        padding: 10px 15px;
+        padding-left: 40px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-primary);
+    }
+    
+    .filter-search i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+    }
+    
+    .filter-search input:focus {
+        border-color: var(--accent-primary);
+        outline: none;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .card {
+        animation: fadeIn 0.3s ease-out;
+    }
+</style>
+
+<div class="page-header">
+    <h1>Editar Build de {{ build.god.name }}</h1>
+    <a href="{% url 'build_detail' build.pk %}" class="btn btn-cancel">Cancelar</a>
+</div>
+
+<form method="post" id="buildForm">
+    {% csrf_token %}
+    <!-- God Field - Hidden because we're editing -->
+    <input type="hidden" name="god" value="{{ build.god.id }}" id="id_god">
+    
+    <!-- Items Selection Section -->
+    <div class="items-section">
+        <h2 class="section-title"><i class="fas fa-star"></i> Objeto Inicial</h2>
+        <div class="filter-search">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchStarter" placeholder="Buscar objeto inicial..." onkeyup="filterItems('searchStarter', 'starterItems')">
+        </div>
+        <div class="items-grid" id="starterItems">
+            {% for item in starter_items %}
+                <div class="item-card {% if build.starter_item.id == item.id %}selected{% endif %}" onclick="selectStarterItem(this, {{ item.id }})">
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.name }}" class="item-icon">
+                    {% else %}
+                        <div class="item-icon" style="display: flex; justify-content: center; align-items: center;">
+                            <i class="fas fa-shopping-bag" style="font-size: 1.5rem; color: var(--accent-primary);"></i>
+                        </div>
+                    {% endif %}
+                    <p class="item-name">{{ item.name }}</p>
+                    {% if item.description %}
+                        <p class="item-stats">{{ item.description|truncatechars:60 }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        <input type="hidden" name="starter_item" id="id_starter_item" value="{{ build.starter_item.id }}">
+    </div>
+    
+    <div class="items-section">
+        <h2 class="section-title"><i class="fas fa-shopping-bag"></i> Objetos Pasivos</h2>
+        <div class="filter-search">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchPassive" placeholder="Buscar objetos pasivos..." onkeyup="filterItems('searchPassive', 'passiveItems')">
+        </div>
+        <div class="items-grid" id="passiveItems">
+            {% for item in passive_items %}
+                <div class="item-card {% if item in build.passive_items.all %}selected{% endif %}" onclick="togglePassiveItem(this, {{ item.id }})">
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.name }}" class="item-icon">
+                    {% else %}
+                        <div class="item-icon" style="display: flex; justify-content: center; align-items: center;">
+                            <i class="fas fa-shopping-bag" style="font-size: 1.5rem; color: var(--accent-primary);"></i>
+                        </div>
+                    {% endif %}
+                    <p class="item-name">{{ item.name }}</p>
+                    {% if item.description %}
+                        <p class="item-stats">{{ item.description|truncatechars:60 }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="selected-item-counter" id="passiveItemCounter">Seleccionados: {{ build.passive_items.all|length }}/6</div>
+        <!-- Hidden inputs for passive items -->
+        {% for item in build.passive_items.all %}
+            <input type="hidden" name="passive_items" value="{{ item.id }}" class="passive-item-input">
+        {% endfor %}
+    </div>
+    
+    <div class="items-section">
+        <h2 class="section-title"><i class="fas fa-gem"></i> Reliquias</h2>
+        <div class="filter-search">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchRelics" placeholder="Buscar reliquias..." onkeyup="filterItems('searchRelics', 'relicsItems')">
+        </div>
+        <div class="items-grid" id="relicsItems">
+            {% for item in relics %}
+                <div class="item-card {% if item in build.relics.all %}selected{% endif %}" onclick="toggleRelicItem(this, {{ item.id }})">
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.name }}" class="item-icon">
+                    {% else %}
+                        <div class="item-icon" style="display: flex; justify-content: center; align-items: center;">
+                            <i class="fas fa-gem" style="font-size: 1.5rem; color: var(--accent-primary);"></i>
+                        </div>
+                    {% endif %}
+                    <p class="item-name">{{ item.name }}</p>
+                    {% if item.description %}
+                        <p class="item-stats">{{ item.description|truncatechars:60 }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="selected-item-counter" id="relicItemCounter">Seleccionados: {{ build.relics.all|length }}/2</div>
+        <!-- Hidden inputs for relics -->
+        {% for item in build.relics.all %}
+            <input type="hidden" name="relics" value="{{ item.id }}" class="relic-item-input">
+        {% endfor %}
+    </div>
+    
+    <div class="description-section">
+        <h2 class="section-title"><i class="fas fa-info-circle"></i> Descripción</h2>
+        <textarea name="description" id="id_description" class="description-textarea" placeholder="Añade una descripción para tu build...">{{ build.description }}</textarea>
+    </div>
+    
+    <div class="submit-section">
+        <a href="{% url 'build_detail' build.pk %}" class="btn btn-cancel">Cancelar</a>
+        <button type="submit" class="btn btn-save">Guardar Cambios</button>
+    </div>
+</form>
+
+<script>
+    // Function to filter items based on search input
+    function filterItems(inputId, containerId) {
+        const input = document.getElementById(inputId);
+        const filter = input.value.toUpperCase();
+        const container = document.getElementById(containerId);
+        const items = container.getElementsByClassName('item-card');
+        
+        for (let i = 0; i < items.length; i++) {
+            const nameElement = items[i].getElementsByClassName('item-name')[0];
+            const txtValue = nameElement.textContent || nameElement.innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                items[i].style.display = "";
+            } else {
+                items[i].style.display = "none";
+            }
+        }
+    }
+    
+    // Function to select starter item
+    function selectStarterItem(element, itemId) {
+        // Remove selected class from all items
+        const items = document.querySelectorAll('#starterItems .item-card');
+        items.forEach(item => {
+            item.classList.remove('selected');
+        });
+        
+        // Add selected class to clicked item
+        element.classList.add('selected');
+        
+        // Update hidden input
+        document.getElementById('id_starter_item').value = itemId;
+    }
+    
+    // Function to toggle passive item selection
+    function togglePassiveItem(element, itemId) {
+        const inputs = document.getElementsByClassName('passive-item-input');
+        const maxItems = 6;
+        
+        // Check if item is already selected
+        let isSelected = element.classList.contains('selected');
+        
+        if (isSelected) {
+            // Remove item
+            element.classList.remove('selected');
+            for (let i = 0; i < inputs.length; i++) {
+                if (inputs[i].value == itemId) {
+                    inputs[i].remove();
+                    break;
+                }
+            }
+        } else {
+            // Add item if less than max
+            if (inputs.length < maxItems) {
+                element.classList.add('selected');
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'passive_items';
+                input.value = itemId;
+                input.className = 'passive-item-input';
+                document.getElementById('buildForm').appendChild(input);
+            } else {
+                alert(`Solo puedes seleccionar hasta ${maxItems} objetos pasivos.`);
+                return;
+            }
+        }
+        
+        // Update counter
+        const counter = document.getElementById('passiveItemCounter');
+        counter.textContent = `Seleccionados: ${document.getElementsByClassName('passive-item-input').length}/${maxItems}`;
+    }
+    
+    // Function to toggle relic item selection
+    function toggleRelicItem(element, itemId) {
+        const inputs = document.getElementsByClassName('relic-item-input');
+        const maxItems = 2;
+        
+        // Check if item is already selected
+        let isSelected = element.classList.contains('selected');
+        
+        if (isSelected) {
+            // Remove item
+            element.classList.remove('selected');
+            for (let i = 0; i < inputs.length; i++) {
+                if (inputs[i].value == itemId) {
+                    inputs[i].remove();
+                    break;
+                }
+            }
+        } else {
+            // Add item if less than max
+            if (inputs.length < maxItems) {
+                element.classList.add('selected');
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'relics';
+                input.value = itemId;
+                input.className = 'relic-item-input';
+                document.getElementById('buildForm').appendChild(input);
+            } else {
+                alert(`Solo puedes seleccionar hasta ${maxItems} reliquias.`);
+                return;
+            }
+        }
+        
+        // Update counter
+        const counter = document.getElementById('relicItemCounter');
+        counter.textContent = `Seleccionados: ${document.getElementsByClassName('relic-item-input').length}/${maxItems}`;
+    }
+</script>
+{% endblock %}

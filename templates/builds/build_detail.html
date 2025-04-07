@@ -509,10 +509,10 @@
 
 {% if build.user == user %}
 <div class="edit-delete">
-    <a href="#" class="btn btn-edit">
+    <a href="{% url 'edit_build' build.id %}" class="btn btn-edit">
         <i class="fas fa-edit"></i> Editar Build
     </a>
-    <a href="#" class="btn btn-delete">
+    <a href="{% url 'delete_build' build.id %}" class="btn btn-delete">
         <i class="fas fa-trash"></i> Eliminar Build
     </a>
 </div>

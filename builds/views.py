@@ -176,3 +176,96 @@ def create_build(request):
         'relics': relics,
         'selected_god_id': god_id
     })
+
+@login_required
+def edit_build(request, pk):
+    build = get_object_or_404(Build, pk=pk)
+    
+    # Check if the user is the owner of the build
+    if build.user != request.user:
+        from django.contrib import messages
+        messages.error(request, 'No tienes permiso para editar esta build.')
+        return redirect('build_detail', pk=build.pk)
+    
+    god_id = build.god.id
+    
+    if request.method == 'POST':
+        post_data = request.POST.copy()
+        post_data.setlist('passive_items', request.POST.getlist('passive_items'))
+        post_data.setlist('relics', request.POST.getlist('relics'))
+        
+        form = BuildForm(post_data, instance=build, user=request.user, god_id=god_id)
+        if form.is_valid():
+            form.save()
+            from django.contrib import messages
+            messages.success(request, '¡Build actualizada correctamente!')
+            return redirect('build_detail', pk=build.pk)
+    else:
+        form = BuildForm(instance=build, user=request.user, god_id=god_id)
+    
+    gods = God.objects.all()
+    
+    starter_items = Item.objects.filter(
+        tier=2,
+        categories__name='Inicial'
+    )
+    
+    power_type = None
+    if god_id:
+        try:
+            selected_god = God.objects.get(id=god_id)
+            power_type = selected_god.power
+        except God.DoesNotExist:
+            selected_god = None
+    
+    passive_items = Item.objects.filter(
+        tier=3,
+        categories__name='Objeto Pasivo'
+    )
+    
+    if power_type:
+        if power_type == 'Physical':
+            magic_item_ids = Item.objects.filter(
+                tier=3,
+                categories__name='Poder Mágico'
+            ).values_list('id', flat=True)
+            passive_items = passive_items.exclude(id__in=magic_item_ids)
+        elif power_type == 'Magical':
+            physical_item_ids = Item.objects.filter(
+                tier=3,
+                categories__name='Poder Físico'
+            ).values_list('id', flat=True)
+            passive_items = passive_items.exclude(id__in=physical_item_ids)
+    
+    relics = Item.objects.filter(
+        tier=3,
+        categories__name='Reliquia'
+    )
+    
+    return render(request, 'builds/edit_build.html', {
+        'form': form,
+        'build': build,
+        'gods': gods,
+        'starter_items': starter_items,
+        'passive_items': passive_items,
+        'relics': relics,
+        'selected_god_id': god_id
+    })
+
+@login_required
+def delete_build(request, pk):
+    build = get_object_or_404(Build, pk=pk)
+    
+    # Check if the user is the owner of the build
+    if build.user != request.user:
+        from django.contrib import messages
+        messages.error(request, 'No tienes permiso para eliminar esta build.')
+        return redirect('build_detail', pk=build.pk)
+    
+    if request.method == 'POST':
+        build.delete()
+        from django.contrib import messages
+        messages.success(request, 'Build eliminada correctamente.')
+        return redirect('my_builds')
+    
+    return render(request, 'builds/delete_build.html', {'build': build})
