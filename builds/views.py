@@ -91,11 +91,10 @@ def build_detail(request, pk):
     }
     return render(request, 'builds/build_detail.html', context)
 
-# Mostrar tus propias builds
 @login_required
 def my_builds(request):
-    builds_list = Build.objects.filter(user=request.user).order_by('-created_at')
-    paginator = Paginator(builds_list, 5)  # Cambia el número para controlar cuántas builds por página
+    builds_list = Build.objects.filter(user=request.user, is_random=False).order_by('-created_at')
+    paginator = Paginator(builds_list, 5)
 
     page_number = request.GET.get('page')
     builds = paginator.get_page(page_number)
