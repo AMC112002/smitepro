@@ -43,9 +43,9 @@
         <button type="submit" class="btn btn-primary submit-btn">
           <i class="fas fa-paper-plane"></i> Publicar
         </button>
-        <button type="reset" class="btn btn-danger reset-btn">
+        <a href="{% url 'forum:post_list' %}" class="btn btn-danger reset-btn">
           <i class="fas fa-times-circle"></i> Cancelar
-        </button>
+        </a>        
       </div>
     </form>
   </div>
