@@ -9,6 +9,7 @@ import json
 
 from .models import ChatRoom, Message
 from .forms import MessageForm
+from django.db import models
 
 @login_required
 def chat_rooms(request):
@@ -36,6 +37,21 @@ def create_chat_room(request):
         if user_ids:
             users = User.objects.filter(id__in=user_ids)
             
+            # Check if this is a one-on-one chat (only one other user)
+            if len(user_ids) == 1:
+                other_user_id = int(user_ids[0])
+                other_user = get_object_or_404(User, id=other_user_id)
+                
+                # Buscar salas de chat que contengan exactamente a estos dos usuarios
+                potential_rooms = ChatRoom.objects.filter(participants=request.user).filter(participants=other_user)
+                
+                for room in potential_rooms:
+                    # Verificar que la sala solo tiene estos dos participantes
+                    if room.participants.count() == 2:
+                        # Encontramos un chat individual existente, redirigir a él
+                        return redirect('chat:chat_room', room_id=room.id)
+            
+            # Create new chat room if no duplicate found or it's a group chat
             chat_room = ChatRoom.objects.create(name=name)
             chat_room.participants.add(request.user, *users)
             

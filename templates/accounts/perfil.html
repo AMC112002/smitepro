@@ -164,16 +164,16 @@
                 <!-- Estadísticas del Usuario -->
                 <div class="profile-stats">
                     <div class="stat-card">
-                        <div class="stat-value">150</div>
-                        <div class="stat-label">Partidas</div>
+                        <div class="stat-value">{{ user.build_set.count }}</div>
+                        <div class="stat-label">Builds</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">65%</div>
-                        <div class="stat-label">Victoria</div>
+                        <div class="stat-value">{{ user.tierlists.count }}</div>
+                        <div class="stat-label">Tierlists</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">4.2</div>
-                        <div class="stat-label">K/D/A</div>
+                        <div class="stat-value">{{ user.post_set.count }}</div>
+                        <div class="stat-label">Publicaciones</div>
                     </div>
                 </div>
 
