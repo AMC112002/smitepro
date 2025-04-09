@@ -14,17 +14,19 @@
   </div>
 
   <div class="search-filter-bar">
-    <div class="search-box">
-      <input type="text" placeholder="Buscar en el foro..." class="search-input">
-      <button class="search-btn"><i class="fas fa-search"></i></button>
-    </div>
-    <div class="filter-options">
-      <select class="filter-select">
-        <option value="recent">Más recientes</option>
-        <option value="popular">Más populares</option>
-        <option value="unanswered">Sin respuestas</option>
-      </select>
-    </div>
+    <form method="get" action="{% url 'forum:post_list' %}" class="search-form">
+      <div class="search-box">
+        <input type="text" name="search" placeholder="Buscar en el foro..." class="search-input" value="{{ search_query }}">
+        <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
+      </div>
+      <div class="filter-options">
+        <select name="filter" class="filter-select" onchange="this.form.submit()">
+          <option value="recent" {% if filter_option == 'recent' %}selected{% endif %}>Más recientes</option>
+          <option value="popular" {% if filter_option == 'popular' %}selected{% endif %}>Más populares</option>
+          <option value="unanswered" {% if filter_option == 'unanswered' %}selected{% endif %}>Sin respuestas</option>
+        </select>
+      </div>
+    </form>
   </div>
 
   <div class="posts-container">
@@ -45,7 +47,7 @@
             </div>
             <div class="post-stats">
               <span><i class="fas fa-comment"></i> {{ post.comments.count }}</span>
-              <span><i class="fas fa-eye"></i> {{ post.views|default:0 }}</span>
+              <span><i class="fas fa-eye"></i> {{ post.views }}</span>
             </div>
           </div>
         </div>
@@ -60,15 +62,15 @@
 
   <div class="pagination">
     {% if posts.has_previous %}
-      <a href="?page=1" class="pagination-link">&laquo; Primera</a>
-      <a href="?page={{ posts.previous_page_number }}" class="pagination-link">Anterior</a>
+      <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_option %}&filter={{ filter_option }}{% endif %}" class="pagination-link">&laquo; Primera</a>
+      <a href="?page={{ posts.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_option %}&filter={{ filter_option }}{% endif %}" class="pagination-link">Anterior</a>
     {% endif %}
     
     <span class="current-page">Página {{ posts.number }} de {{ posts.paginator.num_pages }}</span>
     
     {% if posts.has_next %}
-      <a href="?page={{ posts.next_page_number }}" class="pagination-link">Siguiente</a>
-      <a href="?page={{ posts.paginator.num_pages }}" class="pagination-link">Última &raquo;</a>
+      <a href="?page={{ posts.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_option %}&filter={{ filter_option }}{% endif %}" class="pagination-link">Siguiente</a>
+      <a href="?page={{ posts.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_option %}&filter={{ filter_option }}{% endif %}" class="pagination-link">Última &raquo;</a>
     {% endif %}
   </div>
 </div>
@@ -150,6 +152,14 @@
     justify-content: space-between;
     margin-bottom: 20px;
     flex-wrap: wrap;
+    gap: 15px;
+    }
+    
+    /* Formulario de búsqueda */
+    .search-form {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
     gap: 15px;
     }
 

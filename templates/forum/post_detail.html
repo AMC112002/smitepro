@@ -23,8 +23,7 @@
         <img src="{{ post.author.account.avatar.url|default:'/static/images/default-avatar.png' }}" alt="Avatar" class="author-avatar">      <div class="author-details">
         <span class="author-name">{{ post.author }}</span>
         <span class="author-stats">
-          <i class="fas fa-comment"></i> {{ post.author.posts.count|default:0 }} publicaciones
-        </span>
+          <i class="fas fa-file-alt"></i> {{ post.author.post_set.count|default:0 }} publicaciones</span>
       </div>
     </div>
     

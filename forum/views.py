@@ -5,10 +5,33 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Count
 from .models import Post, Category, Comment
 from .forms import PostForm, CommentForm
+from django.db.models import Q
+from django.contrib.auth.models import User
 
 def post_list(request):
-    # Obtenemos todos los posts ordenados por fecha
-    posts_list = Post.objects.all().order_by('-created_at')
+    # Valor por defecto para el filtro
+    filter_option = request.GET.get('filter', 'recent')
+    # Búsqueda
+    search_query = request.GET.get('search', '')
+    
+    # Base de consulta con búsqueda
+    if search_query:
+        posts_list = Post.objects.filter(
+            Q(title__icontains=search_query) | 
+            Q(content__icontains=search_query)
+        )
+    else:
+        posts_list = Post.objects.all()
+    
+    # Aplicar filtros de ordenación
+    if filter_option == 'popular':
+        # Ordenar por número de comentarios (popularidad)
+        posts_list = posts_list.annotate(comment_count=Count('comments')).order_by('-comment_count')
+    elif filter_option == 'unanswered':
+        # Posts sin comentarios
+        posts_list = posts_list.annotate(comment_count=Count('comments')).filter(comment_count=0)
+    else:  # 'recent' es el valor por defecto
+        posts_list = posts_list.order_by('-created_at')
     
     # Añadimos paginación
     paginator = Paginator(posts_list, 9)  # Mostramos 9 posts por página
@@ -22,16 +45,24 @@ def post_list(request):
     except EmptyPage:
         # Si la página está fuera de rango, mostramos la última página de resultados
         posts = paginator.page(paginator.num_pages)
+    
+    context = {
+        'posts': posts,
+        'filter_option': filter_option,
+        'search_query': search_query
+    }
         
-    return render(request, 'forum/post_list.html', {'posts': posts})
+    return render(request, 'forum/post_list.html', context)
 
 def post_detail(request, pk):
     post = get_object_or_404(Post, pk=pk)
     comments = post.comments.all().order_by('-created_at')
     
-    # Incrementamos el contador de vistas (si se implementa)
-    # post.views = post.views + 1
-    # post.save()
+    # Incrementamos el contador de vistas
+    if not hasattr(post, 'views'):
+        post.views = 0
+    post.views += 1
+    post.save()
     
     if request.method == 'POST':
         form = CommentForm(request.POST)
@@ -63,6 +94,7 @@ def post_create(request):
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
+            post.views = 0  # Inicializamos las vistas
             post.save()
             
             # Si hay tags, los procesamos (asumiendo que tienes un campo para tags)
