@@ -31,7 +31,7 @@
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item {% if request.resolver_match.url_name == 'game_modes_list' %}active{% endif %}" href="{% url 'game_modes_list' %}">
+                            <a class="dropdown-item {% if request.resolver_match.url_name == 'game_modes_list' %}active{% endif %}" href="{% url 'gamemodes:game_modes_list' %}">
                                 <i class="fas fa-gamepad me-2"></i>Modos de Juego
                             </a>
                         </li>
