@@ -97,9 +97,9 @@
             <div class="game-mode-description">
                 <p>{{ mode.resume|linebreaksbr }}</p>
                 <p><strong>Jugadores:</strong> {{ mode.statistics.jugadores_equipo }}</p>
-                <a href="{% url 'game_mode_detail' mode.id %}" class="btn btn-outline-light px-4 py-2 rounded-pill shadow-sm ver-mas-btn">
+                <a href="{% url 'gamemodes:game_mode_detail' mode.id %}" class="btn btn-outline-light px-4 py-2 rounded-pill shadow-sm ver-mas-btn">
                     Ver más
-                </a>                
+                </a>                                
             </div>
             {% if mode.image %}
             <img src="{{ mode.image.url }}" alt="{{ mode.name }}" class="game-mode-image">
