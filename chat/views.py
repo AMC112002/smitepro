@@ -92,10 +92,23 @@ def get_messages(request, room_id):
     else:
         messages = messages.order_by('-timestamp')[:10] 
     
-    Message.objects.filter(
-        id__in=messages.filter(sender__in=chat_room.participants.exclude(id=request.user.id)).values_list('id', flat=True),
+    # The error occurs here. You can't filter a queryset after applying a slice operation.
+    # The fix is to get the IDs first, then do the update separately:
+    
+    # First, identify messages to mark as read (only from other participants)
+    unread_messages = Message.objects.filter(
+        chat_room=chat_room,
+        sender__in=chat_room.participants.exclude(id=request.user.id),
         is_read=False
-    ).update(is_read=True)
+    )
+    
+    # If we're using a slice (in the 'else' branch above), we need to filter by the same messages
+    if not last_message_id:
+        message_ids = [m.id for m in messages]
+        unread_messages = unread_messages.filter(id__in=message_ids)
+    
+    # Update the messages as read
+    unread_messages.update(is_read=True)
     
     messages_data = []
     for message in messages:
