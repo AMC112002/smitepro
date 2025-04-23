@@ -1,0 +1,45 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: smitepro
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: triana27
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./smitepro_dump.sql:/docker-entrypoint-initdb.d/smitepro_dump.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn smitepro.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120"
+    volumes:
+      - ./static:/app/static
+      - ./media:/app/media
+      - ./templates:/app/templates
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+    environment:
+      DEBUG: 'True'
+      DJANGO_ALLOWED_HOSTS: "localhost 127.0.0.1 0.0.0.0 smitepro-web-1 smitepro-db-1"
+      DATABASE_URL: postgres://postgres:triana27@db:5432/smitepro
+      PYTHONUNBUFFERED: 1
+
+volumes:
+  postgres_data:
