@@ -375,6 +375,7 @@
         </div>
         {% endif %}
 
+        {% if patch.game_modes %}
         <!-- Game Modes -->
         <div class="section-card">
             <h2 class="section-title">
@@ -385,6 +386,7 @@
                 {{ patch.game_modes|linebreaks }}
             </div>
         </div>
+        {% endif %}
 
         <!-- Gods Balance -->
         <div class="section-card">

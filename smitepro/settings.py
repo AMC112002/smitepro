@@ -101,13 +101,14 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Email
+# Configuración para envío de correos reales a través de Gmail
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'alejandromateocapilla@gmail.com')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = 'noreply@smitepro.com'
+EMAIL_HOST_USER = 'alejandromateocapilla@gmail.com'  # Tu dirección de Gmail
+EMAIL_HOST_PASSWORD = 'ttmi sica pavn tacn'  # Reemplaza con tu contraseña de aplicación
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  # Usa el mismo correo para el remitente
 DEFAULT_CHARSET = 'utf-8'
 
 # Logging si DEBUG está activado

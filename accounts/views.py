@@ -13,10 +13,12 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+import os
+from django.conf import settings
 
 def register(request):
     if request.method == 'POST':
-        username = request.POST.get('username')  # Ahora se ingresa un username
+        username = request.POST.get('username')
         email = request.POST.get('email')
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
@@ -33,7 +35,7 @@ def register(request):
 
         try:
             user = User.objects.create_user(
-                username=username,  # Ahora usa el username ingresado
+                username=username,
                 email=email, 
                 password=password,
                 first_name=first_name,
@@ -42,7 +44,39 @@ def register(request):
             user.is_active = True
             user.save()
 
-            account = Account(user=user, address=address, telephone=telephone, avatar=avatar)
+            # Crear cuenta asociada al usuario
+            account = Account(user=user, address=address, telephone=telephone)
+            
+            # Manejar el avatar
+            if not avatar:
+                # El usuario no subió un avatar, usar el avatar por defecto
+                default_avatar_path = os.path.join(settings.STATIC_ROOT, 'img', 'default_avatar.png')
+                if not os.path.exists(default_avatar_path):
+                    # Si el archivo por defecto no está en STATIC_ROOT, intentar con STATICFILES_DIRS
+                    for static_dir in settings.STATICFILES_DIRS:
+                        potential_path = os.path.join(static_dir, 'avatar', 'default_avatar.png')
+                        if os.path.exists(potential_path):
+                            default_avatar_path = potential_path
+                            break
+                
+                # Asegurar que el directorio de destino exista
+                avatar_dir = os.path.join(settings.MEDIA_ROOT, 'avatars')
+                os.makedirs(avatar_dir, exist_ok=True)
+                
+                # Generar un nombre de archivo único basado en el usuario
+                user_avatar_filename = f"default_{user.id}.png"
+                destination_path = os.path.join(avatar_dir, user_avatar_filename)
+                
+                # Copiar el avatar por defecto al directorio de medios con un nombre único
+                with open(default_avatar_path, 'rb') as default_file:
+                    with open(destination_path, 'wb') as dest_file:
+                        dest_file.write(default_file.read())
+                
+                # Asignar la ruta relativa al campo avatar
+                account.avatar = f'avatars/{user_avatar_filename}'
+            else:
+                account.avatar = avatar
+            
             account.save()
 
             messages.success(request, '¡Registro exitoso! Puedes iniciar sesión.')
@@ -50,6 +84,9 @@ def register(request):
 
         except IntegrityError:
             messages.error(request, 'El nombre de usuario o correo ya están en uso.')
+        except Exception as e:
+            # Capturar cualquier otra excepción que pueda ocurrir
+            messages.error(request, f'Error durante el registro: {str(e)}')
 
     return render(request, 'accounts/register.html')
 

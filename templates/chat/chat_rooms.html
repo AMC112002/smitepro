@@ -8,8 +8,6 @@
     }
 
     .chat-rooms-container {
-        max-width: 800px;
-        margin: 0 auto;
         padding: 20px;
     }
 
@@ -20,11 +18,12 @@
         margin-bottom: 30px;
         border-bottom: 1px solid #333;
         padding-bottom: 15px;
+        flex-direction: column;
     }
 
     .chat-rooms-header h1 {
         color: #ffffff;
-        margin: 0;
+        margin-bottom: 10px;
     }
 
     .new-chat-btn {
@@ -32,6 +31,8 @@
         color: white;
         border: none;
         transition: background-color 0.3s ease;
+        width: 100%;
+        max-width: 200px;
     }
 
     .new-chat-btn:hover {
@@ -69,11 +70,25 @@
         color: #E0E0E0;
         border: none;
     }
+
+    @media (min-width: 768px) {
+        .chat-rooms-header {
+            flex-direction: row;
+        }
+
+        .chat-rooms-header h1 {
+            margin-bottom: 0;
+        }
+
+        .new-chat-btn {
+            width: auto;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="chat-rooms-container">
+<div class="container-fluid chat-rooms-container">
     <div class="chat-rooms-header">
         <h1>Mis conversaciones</h1>
         <a href="{% url 'chat:create_chat_room' %}" class="btn new-chat-btn">
@@ -86,7 +101,7 @@
             <div class="list-group">
                 {% for room in chat_rooms %}
                     <a href="{% url 'chat:chat_room' room_id=room.id %}" class="list-group-item list-group-item-action chat-room-item">
-                        <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex justify-content-between align-items-start flex-column flex-md-row">
                             <div>
                                 <h5 class="mb-1">
                                     {% if room.name %}
@@ -94,7 +109,7 @@
                                     {% else %}
                                         {% for participant in room.participants.all %}
                                             {% if participant != user %}
-                                                {{ participant.username }}{% if not forloop.last %} {% endif %}
+                                                {{ participant.username }}{% if not forloop.last %}, {% endif %}
                                             {% endif %}
                                         {% endfor %}
                                     {% endif %}
@@ -107,7 +122,7 @@
                                     {% endif %}
                                 </p>
                             </div>
-                            <small class="text-muted">
+                            <small class="text-muted mt-2 mt-md-0 ms-md-3">
                                 {% if room.last_message_time %}
                                     {{ room.last_message_time|date:"d/m/Y H:i" }}
                                 {% endif %}

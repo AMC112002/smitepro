@@ -224,6 +224,7 @@
         {% endif %}
 
         <!-- Campos de la Jungla -->
+        {% if mode.jungle_camps.exists %}
         <div class="stat-card">
             <h3 class="section-title">Campos de la Jungla</h3>
             <ul class="mechanics-list">
@@ -235,6 +236,7 @@
                 {% endfor %}
             </ul>
         </div>
+        {% endif %}
 
         <!-- Mecánicas Únicas -->
         {% if mechanics %}

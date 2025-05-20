@@ -56,6 +56,7 @@
         background-color: #2C2C2C;
         border: none;
         color: #E0E0E0;
+        margin-bottom: 2px;
     }
 
     .list-group-item:hover {
@@ -98,6 +99,65 @@
         color: #FFD700;
         border: none;
     }
+    
+    /* Estilos para el buscador */
+    .search-box {
+        position: relative;
+        margin-bottom: 15px;
+    }
+    
+    .search-box .fa-search {
+        position: absolute;
+        top: 12px;
+        left: 15px;
+        color: #888;
+    }
+    
+    .search-input {
+        padding-left: 40px;
+        margin-bottom: 15px;
+    }
+    
+    .users-container {
+        max-height: 300px;
+        overflow-y: auto;
+        margin-bottom: 15px;
+        border-radius: 4px;
+    }
+    
+    .no-results {
+        text-align: center;
+        padding: 15px;
+        background-color: #2C2C2C;
+        color: #888;
+        border-radius: 4px;
+        margin-top: 10px;
+    }
+    
+    /* Personalización del scrollbar */
+    .users-container::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .users-container::-webkit-scrollbar-track {
+        background: #1E1E1E;
+    }
+    
+    .users-container::-webkit-scrollbar-thumb {
+        background: #444;
+        border-radius: 4px;
+    }
+    
+    .users-container::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
+    /* Destacar texto encontrado */
+    .highlight {
+        background-color: rgba(0, 92, 75, 0.3);
+        padding: 0 2px;
+        border-radius: 2px;
+    }
 </style>
 {% endblock %}
 
@@ -108,7 +168,7 @@
             <h2 class="mb-0">Nueva conversación</h2>
         </div>
         <div class="card-body">
-            <form method="post">
+            <form method="post" id="chatForm">
                 {% csrf_token %}
                 <div class="mb-3">
                     <label for="name" class="form-label">Nombre de la conversación (opcional)</label>
@@ -119,19 +179,33 @@
                     <label class="form-label">Seleccionar usuarios</label>
                     <div class="form-text mb-2">Selecciona al menos un usuario para chatear</div>
                     
-                    <div class="list-group">
-                        {% for user_item in users %}
-                            <label class="list-group-item">
-                                <input class="form-check-input me-1" type="checkbox" name="users" value="{{ user_item.id }}">
-                                {{ user_item.username }}
-                            </label>
-                        {% empty %}
-                            <div class="alert alert-warning">No hay otros usuarios disponibles</div>
-                        {% endfor %}
+                    <!-- Buscador de usuarios -->
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" class="form-control search-input" id="searchUsers" placeholder="Buscar usuarios...">
+                    </div>
+                    
+                    <!-- Contenedor con scroll para usuarios -->
+                    <div class="users-container">
+                        <div class="list-group" id="usersList">
+                            {% for user_item in users %}
+                                <label class="list-group-item" data-username="{{ user_item.username|lower }}">
+                                    <input class="form-check-input me-1" type="checkbox" name="users" value="{{ user_item.id }}">
+                                    <span class="username-text">{{ user_item.username }}</span>
+                                </label>
+                            {% empty %}
+                                <div class="alert alert-warning">No hay otros usuarios disponibles</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Mensaje para cuando no hay resultados -->
+                    <div class="no-results" id="noResults" style="display: none;">
+                        No se encontraron usuarios con ese nombre
                     </div>
                 </div>
                 <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" id="submitButton" disabled>
                         <i class="fas fa-paper-plane me-2"></i>Crear conversación
                     </button>
                     <a href="{% url 'chat:chat_rooms' %}" class="btn btn-outline-secondary">
@@ -147,22 +221,69 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Add validation to ensure at least one user is selected
-        const form = document.querySelector('form');
-        const checkboxes = form.querySelectorAll('input[name="users"]');
-        const submitButton = form.querySelector('button[type="submit"]');
-
-        function validateUserSelection() {
-            const selectedUsers = Array.from(checkboxes).some(cb => cb.checked);
-            submitButton.disabled = !selectedUsers;
+        // Elementos del DOM
+        const searchInput = document.getElementById('searchUsers');
+        const userItems = document.querySelectorAll('.list-group-item');
+        const noResults = document.getElementById('noResults');
+        const usersList = document.getElementById('usersList');
+        const checkboxes = document.querySelectorAll('input[name="users"]');
+        const submitButton = document.getElementById('submitButton');
+        
+        // Función para validar que al menos un usuario esté seleccionado
+        function validateSelection() {
+            const anyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
+            submitButton.disabled = !anyChecked;
         }
-
+        
+        // Agregar evento de cambio a todos los checkboxes
         checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', validateUserSelection);
+            checkbox.addEventListener('change', validateSelection);
         });
-
-        // Initial validation
-        validateUserSelection();
+        
+        // Función para buscar usuarios
+        function searchUsers() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            let visibleCount = 0;
+            
+            // Recorrer todos los elementos de usuario
+            userItems.forEach(item => {
+                const username = item.getAttribute('data-username');
+                
+                if (username.includes(searchTerm)) {
+                    // Mostrar el elemento si coincide con la búsqueda
+                    item.style.display = 'block';
+                    visibleCount++;
+                    
+                    // Destacar el texto que coincide (solo si hay búsqueda)
+                    if (searchTerm !== '') {
+                        const usernameText = item.querySelector('.username-text');
+                        const originalUsername = usernameText.textContent;
+                        const regex = new RegExp(searchTerm, 'gi');
+                        
+                        // Reemplazar el texto coincidente con el destacado
+                        usernameText.innerHTML = originalUsername.replace(regex, match => 
+                            `<span class="highlight">${match}</span>`
+                        );
+                    } else {
+                        // Restaurar texto original si no hay búsqueda
+                        const usernameText = item.querySelector('.username-text');
+                        usernameText.innerHTML = item.getAttribute('data-username');
+                    }
+                } else {
+                    // Ocultar el elemento si no coincide
+                    item.style.display = 'none';
+                }
+            });
+            
+            // Mostrar mensaje de "no hay resultados" si es necesario
+            noResults.style.display = (visibleCount === 0 && searchTerm !== '') ? 'block' : 'none';
+        }
+        
+        // Escuchar eventos de entrada en el campo de búsqueda
+        searchInput.addEventListener('input', searchUsers);
+        
+        // Validación inicial
+        validateSelection();
     });
 </script>
 {% endblock %}
